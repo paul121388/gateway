@@ -7,11 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="backend-http-server" />
+        <module name="gateway-client" />
+        <module name="gateway-common" />
+        <module name="gateway-register-center" />
         <module name="backend-dubbo-server" />
         <module name="gateway-core" />
         <module name="gateway-config-center" />
-        <module name="gateway-common" />
-        <module name="gateway-register-center" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
