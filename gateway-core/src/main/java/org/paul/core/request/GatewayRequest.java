@@ -1,19 +1,24 @@
 package org.paul.core.request;
 
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import com.google.common.collect.Lists;
+import com.jayway.jsonpath.JsonPath;
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.cookie.Cookie;
+import org.paul.common.constants.BasicConst;
+import org.paul.common.utils.TimeUtil;
 
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class GatewayRequest implements IGatewayRequest{
+@Slf4j
+public class GatewayRequest implements IGatewayRequest {
     /**
      * 服务唯一id
      */
@@ -24,7 +29,7 @@ public class GatewayRequest implements IGatewayRequest{
      * 进入网关的开始时间
      */
     @Getter
-    private final  long beginTime;
+    private final long beginTime;
 
     /**
      * 进入网关的结束时间
@@ -66,7 +71,7 @@ public class GatewayRequest implements IGatewayRequest{
      * 请求方式 post/get/put/delete
      */
     @Getter
-    private final HttpMethod httpMethod;
+    private final HttpMethod method;
 
     /**
      * 请求内容格式
@@ -78,7 +83,7 @@ public class GatewayRequest implements IGatewayRequest{
      * 请求头
      */
     @Getter
-    private final HttpHeaders httpHeaders;
+    private final HttpHeaders headers;
 
     /**
      * 参数解析器，用于解析uri中的参数
@@ -129,33 +134,119 @@ public class GatewayRequest implements IGatewayRequest{
     private final RequestBuilder requestBuilder;
 
     public GatewayRequest(String uniqueId,
-                          long beginTime,
                           long endTime,
                           Charset charset,
                           String clientIp,
                           String host,
                           String path,
                           String uri,
-                          HttpMethod httpMethod,
+                          HttpMethod method,
                           HttpMethod contentType,
-                          HttpHeaders httpHeaders,
+                          HttpHeaders headers,
                           QueryStringDecoder queryStringDecoder,
                           FullHttpRequest fullHttpRequest,
                           RequestBuilder requestBuilder) {
         this.uniqueId = uniqueId;
-        this.beginTime = beginTime;
+        this.beginTime = TimeUtil.currentTimeMillis();
         this.endTime = endTime;
         this.charset = charset;
         this.clientIp = clientIp;
         this.host = host;
         this.path = path;
         this.uri = uri;
-        this.httpMethod = httpMethod;
         this.contentType = contentType;
-        this.httpHeaders = httpHeaders;
-        this.queryStringDecoder = queryStringDecoder;
+        this.method = method;
+        this.headers = headers;
+        this.queryStringDecoder = new QueryStringDecoder(uri, this.charset);
         this.fullHttpRequest = fullHttpRequest;
-        this.requestBuilder = requestBuilder;
+        this.requestBuilder = new RequestBuilder();
+
+        this.modifyHost = host;
+        this.modifyPath = path;
+        this.modifyScheme = BasicConst.HTTP_PREFIX_SEPARATOR;
+        this.requestBuilder.setMethod(getMethod().name());
+        this.requestBuilder.setHeaders(getHeaders());
+        this.requestBuilder.setQueryParams(getQueryStringDecoder().parameters());
+
+        ByteBuf contentBuffer = fullHttpRequest.content();
+        if (Objects.nonNull(contentBuffer)) {
+            this.requestBuilder.setBody(contentBuffer.toString(this.charset));
+        }
+
+    }
+
+    /**
+     * 获取请求体
+     *
+     * @return
+     */
+    public String getBody() {
+        if (StringUtils.isEmpty(body)) {
+            body = fullHttpRequest.content().toString(charset);
+        }
+        return body;
+    }
+
+    /**
+     * 获取cookie
+     *
+     * @param name
+     * @return
+     */
+    public Cookie getCookie(String name) {
+        if (cookieMap == null) {
+            cookieMap = new HashMap<String, Cookie>();
+            String cookieStr = headers.get(HttpHeaderNames.COOKIE);
+            Set<io.netty.handler.codec.http.cookie.Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieStr);
+            for (io.netty.handler.codec.http.cookie.Cookie cookie : cookies) {
+                cookieMap.put(cookie.name(), (Cookie) cookie);
+            }
+        }
+        return cookieMap.get(name);
+    }
+
+    /**
+     * 获取指定名字的参数值
+     *
+     * @param name
+     * @return
+     */
+    public List<String> getQueryParamsMultiple(String name) {
+        return queryStringDecoder.parameters().get(name);
+    }
+
+    public List<String> getPostParamsMultiple(String name) {
+        String body = getBody();
+        if (isFormPost()) {
+            if (postParams == null) {
+                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(body, charset);
+                postParams = queryStringDecoder.parameters();
+            }
+
+            if (postParams == null || !postParams.isEmpty()) {
+                return null;
+            } else {
+                return postParams.get(name);
+            }
+        } else if (isJsonPost()) {
+//            try {
+                return Lists.newArrayList(JsonPath.read(body, name).toString());
+//            } catch (Exception e) {
+//                log.error("JsonPath解析失败，JsonPath:{},Body:{},", name, body, e);
+//            }
+        }
+        return null;
+    }
+
+    public boolean isFormPost() {
+        return HttpMethod.POST.equals(method) &&
+                (contentType.asciiName().startsWith(HttpHeaderValues.FORM_DATA.toString())
+                || contentType.asciiName().startsWith(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()));
+    }
+
+    public boolean isJsonPost() {
+        return HttpMethod.POST.equals(method) &&
+                contentType.asciiName().startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
     }
 
     @Override
