@@ -81,7 +81,7 @@ public interface IContext {
     /**
      * 获取异常
      */
-    void getThrowable();
+    Throwable getThrowable();
 
     /**
      * 设置异常
