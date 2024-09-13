@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+/**
+ * @PROJECT_NAME: api-gateway
+ * @DESCRIPTION: 核心上下文基础类
+ */
 public class BaseContext implements IContext {
     // 转发协议
     protected final String protocol;
@@ -20,7 +24,7 @@ public class BaseContext implements IContext {
     // Netty上下文
     protected final ChannelHandlerContext nettyCtx;
 
-    // Netty上下文
+    // 请求处理过程中存储和传递额外信息
     protected final Map<String, Object> attributes = new HashMap<String, Object>();
 
     // 请求过程中发生的异常
