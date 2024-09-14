@@ -215,6 +215,11 @@ public class GatewayRequest implements IGatewayRequest {
         return queryStringDecoder.parameters().get(name);
     }
 
+    /**
+     * 获取post参数值
+     * @param name
+     * @return
+     */
     public List<String> getPostParamsMultiple(String name) {
         String body = getBody();
         if (isFormPost()) {
@@ -238,12 +243,20 @@ public class GatewayRequest implements IGatewayRequest {
         return null;
     }
 
+    /**
+     * 是否是表单提交
+     * @return
+     */
     public boolean isFormPost() {
         return HttpMethod.POST.equals(method) &&
                 (contentType.startsWith(HttpHeaderValues.FORM_DATA.toString())
                 || contentType.startsWith(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()));
     }
 
+    /**
+     * 是否是json提交
+     * @return
+     */
     public boolean isJsonPost() {
         return HttpMethod.POST.equals(method) &&
                 contentType.startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
