@@ -19,7 +19,7 @@ public class BaseContext implements IContext {
     protected final String protocol;
 
     // 状态，多线程考虑使用volatile
-    protected  volatile int status = IContext.Running;
+    protected volatile int status = IContext.Running;
 
     // Netty上下文
     protected final ChannelHandlerContext nettyCtx;
@@ -37,7 +37,7 @@ public class BaseContext implements IContext {
     protected List<Consumer<IContext>> completedCallbacks;
 
     // 资源是否已经释放
-    protected final AtomicBoolean requesetReleased = new AtomicBoolean(false);
+    protected final AtomicBoolean requestReleased = new AtomicBoolean(false);
 
     public BaseContext(String protocol, boolean keepAlive, ChannelHandlerContext nettyCtx) {
         this.protocol = protocol;
@@ -105,6 +105,18 @@ public class BaseContext implements IContext {
 
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getAttribute(String key) {
+        return (T) attributes.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T putAttribute(String key, T value) {
+        return (T) attributes.put(key, value);
+    }
+
     @Override
     public Throwable getThrowable() {
         return this.throwable;
@@ -126,8 +138,8 @@ public class BaseContext implements IContext {
     }
 
     @Override
-    public boolean releaseRequest() {
-        return false;
+    public void releaseRequest() {
+        this.requestReleased.compareAndSet(false, true);
     }
 
     @Override

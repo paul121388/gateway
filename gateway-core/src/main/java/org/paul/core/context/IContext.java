@@ -105,7 +105,7 @@ public interface IContext {
      * 释放请求资源
      * @return
      */
-    boolean releaseRequest();
+    void releaseRequest();
 
     /**
      * 设置写回接收回调函数
@@ -117,5 +117,22 @@ public interface IContext {
      * 执行写回接收回调函数
      */
     void invokeCompletedCallBack();
+
+    /**
+     * 获取上下文参数
+     * @param key
+     * @return
+     * @param <T>
+     */
+    <T> T getAttribute(String key);
+
+    /**
+     *
+     * @param key
+     * @param value
+     * @return
+     * @param <T>
+     */
+    <T> T putAttribute(String key, T value);
 
 }
