@@ -77,7 +77,7 @@ public class GatewayRequest implements IGatewayRequest {
      * 请求内容格式
      */
     @Getter
-    private final HttpMethod contentType;
+    private final String contentType;
 
     /**
      * 请求头
@@ -141,7 +141,7 @@ public class GatewayRequest implements IGatewayRequest {
                           String path,
                           String uri,
                           HttpMethod method,
-                          HttpMethod contentType,
+                          String contentType,
                           HttpHeaders headers,
                           QueryStringDecoder queryStringDecoder,
                           FullHttpRequest fullHttpRequest,
@@ -240,72 +240,75 @@ public class GatewayRequest implements IGatewayRequest {
 
     public boolean isFormPost() {
         return HttpMethod.POST.equals(method) &&
-                (contentType.asciiName().startsWith(HttpHeaderValues.FORM_DATA.toString())
-                || contentType.asciiName().startsWith(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()));
+                (contentType.startsWith(HttpHeaderValues.FORM_DATA.toString())
+                || contentType.startsWith(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()));
     }
 
     public boolean isJsonPost() {
         return HttpMethod.POST.equals(method) &&
-                contentType.asciiName().startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
+                contentType.startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
     }
 
     @Override
     public void setModifyHost(String host) {
-
+        this.modifyHost = host;
     }
 
     @Override
     public String getModifyHost() {
-        return null;
+        return modifyHost;
     }
 
     @Override
     public void setModifyPath(String path) {
-
+        this.modifyPath = path;
     }
 
     @Override
     public String getModifyPath() {
-        return null;
+        return path;
     }
 
     @Override
-    public void addHeader(CharSequence key, String value) {
-
+    public void addHeader(CharSequence name, String value) {
+        requestBuilder.addHeader(name, value);
     }
 
     @Override
-    public void setHeader(CharSequence key, String value) {
-
+    public void setHeader(CharSequence name, String value) {
+        requestBuilder.setHeader(name, value);
     }
 
     @Override
-    public void addQueryParam(CharSequence key, String value) {
-
+    public void addQueryParam(String name, String value) {
+        requestBuilder.addQueryParam(name, value);
     }
 
     @Override
-    public void addFormParam(CharSequence key, String value) {
-
+    public void addFormParam(String name, String value) {
+        if(isFormPost()){
+            requestBuilder.addFormParam(name, value);
+        }
     }
 
     @Override
     public void addOrReplaceCookie(Cookie cookie) {
-
+        requestBuilder.addOrReplaceCookie(cookie);
     }
 
     @Override
     public void setRequestTimeout(int requestTimeout) {
-
+        requestBuilder.setRequestTimeout(requestTimeout);
     }
 
     @Override
-    public void getFinalUrl() {
-
+    public String getFinalUrl() {
+        return modifyScheme + modifyHost + modifyPath;
     }
 
     @Override
     public Request build() {
-        return null;
+        requestBuilder.setUrl(getFinalUrl());
+        return requestBuilder.build();
     }
 }

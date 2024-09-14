@@ -1,6 +1,7 @@
 package org.paul.core.context;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.paul.core.reponse.GatewayResponse;
 import org.paul.core.request.GatewayRequest;
 
 import javax.naming.Context;

@@ -43,12 +43,12 @@ public interface IGatewayRequest {
     /**
      * 添加get请求参数
      */
-    void addQueryParam(CharSequence key, String value);
+    void addQueryParam(String key, String value);
 
     /**
      * 添加post请求参数
      */
-    void addFormParam(CharSequence key, String value);
+    void addFormParam(String key, String value);
 
     /**
      * 请求下游服务，添加cookie
@@ -63,7 +63,7 @@ public interface IGatewayRequest {
     /**
      * 获取最终请求路径，包含请求参数 http://127.0.0.1:8080/test?name=paul
      */
-    void getFinalUrl();
+    String getFinalUrl();
 
     /**
      * 构建最终的请求对象
