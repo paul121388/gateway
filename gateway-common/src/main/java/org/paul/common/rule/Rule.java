@@ -1,0 +1,154 @@
+package org.paul.common.rule;
+
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * @author paul
+ * @description 规则对象
+ */
+@Data
+public class Rule implements Comparable<Rule>, Serializable {
+    /**
+     * 全局唯一规则Id
+     */
+    private String id;
+
+    /**
+     * 规则名称
+     */
+    private String name;
+
+    /**
+     * 协议类型
+     */
+    private String protocol;
+
+    /**
+     * 规则优先级
+     */
+    private Integer order;
+
+    /**
+     * 过滤器配置集合
+     */
+    private Set<FilterConfig> filterConfigs = new HashSet<>();
+
+    public Rule() {
+        super();
+    }
+
+    public Rule(String id, String name, String protocol, Integer order, Set<FilterConfig> filterConfigs) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.protocol = protocol;
+        this.order = order;
+        this.filterConfigs = filterConfigs;
+    }
+
+    public static class FilterConfig {
+        /**
+         * 过滤器规则Id
+         */
+        private String id;
+
+
+        /**
+         * 过滤器配置信息
+         */
+        private String config;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getConfig() {
+            return config;
+        }
+
+        public void setConfig(String config) {
+            this.config = config;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FilterConfig that = (FilterConfig) o;
+            return Objects.equals(id, that.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+    }
+
+    /**
+     * 向规则里面提供新增配置的方法
+     * @param filterConfig
+     * @return
+     */
+    public boolean addFilterConfig(FilterConfig filterConfig) {
+        return filterConfigs.add(filterConfig);
+    }
+
+    /**
+     * 通过指定的id获取指定的配置信息
+     * @param id
+     * @return
+     */
+    public FilterConfig getFilterConfig(String id) {
+        for (FilterConfig filterConfig : filterConfigs) {
+            if (filterConfig.getId().equalsIgnoreCase(id)) {
+                return filterConfig;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 根据Filterid，判断FilterConfig是否存在
+     * @param filterId
+     * @return
+     */
+    public boolean hashId(String filterId) {
+        for (FilterConfig filterConfig : filterConfigs) {
+            if (filterConfig.getId().equalsIgnoreCase(filterId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int compareTo(Rule o) {
+        int compareOrder = Integer.compare(this.getOrder(), o.getOrder());
+        if(compareOrder == 0){
+            return this.getId().compareTo(o.getId());
+        }
+        return compareOrder;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rule rule = (Rule) o;
+        return Objects.equals(id, rule.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+}

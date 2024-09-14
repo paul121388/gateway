@@ -3,8 +3,7 @@ package org.paul.core.context;
 import io.netty.channel.ChannelHandlerContext;
 import org.paul.core.reponse.GatewayResponse;
 import org.paul.core.request.GatewayRequest;
-
-import javax.naming.Context;
+import org.paul.common.rule.Rule;
 
 /**
  * @PROJECT_NAME: api-gateway
