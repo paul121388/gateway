@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.paul.common.utils.RemotingUtil;
 import org.paul.core.Config;
@@ -35,17 +36,20 @@ public class NettyHttpServer implements LifeCycle {
      */
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup eventLoopGroupBoss;
+
+    @Getter
     private EventLoopGroup eventLoopGroupWorker;
 
-    private NettyProcessor nettyProcessor;
+    private final NettyProcessor nettyProcessor;
 
     /**
      * 实现NettyHttpServer构造方法
      * config初始化
      * 调用init
      */
-    public NettyHttpServer(Config config) {
+    public NettyHttpServer(Config config, NettyProcessor nettyProcessor) {
         this.config = config;
+        this.nettyProcessor = nettyProcessor;
         init();
     }
 
