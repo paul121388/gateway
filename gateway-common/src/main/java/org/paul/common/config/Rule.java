@@ -1,4 +1,4 @@
-package org.paul.common.rule;
+package org.paul.common.config;
 
 import lombok.Data;
 

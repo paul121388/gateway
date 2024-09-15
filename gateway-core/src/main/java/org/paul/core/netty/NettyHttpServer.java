@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.paul.common.utils.RemotingUtil;
 import org.paul.core.Config;
 import org.paul.core.LifeCycle;
+import org.paul.core.netty.processor.NettyProcessor;
 
 import java.net.InetSocketAddress;
 

@@ -32,12 +32,6 @@ public class GatewayRequest implements IGatewayRequest {
     private final long beginTime;
 
     /**
-     * 进入网关的结束时间
-     */
-    @Getter
-    private final long endTime;
-
-    /**
      * 请求的charset字符集
      */
     @Getter
@@ -134,30 +128,25 @@ public class GatewayRequest implements IGatewayRequest {
     private final RequestBuilder requestBuilder;
 
     public GatewayRequest(String uniqueId,
-                          long endTime,
                           Charset charset,
                           String clientIp,
                           String host,
-                          String path,
                           String uri,
                           HttpMethod method,
                           String contentType,
                           HttpHeaders headers,
-                          QueryStringDecoder queryStringDecoder,
-                          FullHttpRequest fullHttpRequest,
-                          RequestBuilder requestBuilder) {
+                          FullHttpRequest fullHttpRequest) {
         this.uniqueId = uniqueId;
         this.beginTime = TimeUtil.currentTimeMillis();
-        this.endTime = endTime;
         this.charset = charset;
         this.clientIp = clientIp;
         this.host = host;
-        this.path = path;
         this.uri = uri;
         this.contentType = contentType;
         this.method = method;
         this.headers = headers;
         this.queryStringDecoder = new QueryStringDecoder(uri, this.charset);
+        this.path  = queryStringDecoder.path();
         this.fullHttpRequest = fullHttpRequest;
         this.requestBuilder = new RequestBuilder();
 

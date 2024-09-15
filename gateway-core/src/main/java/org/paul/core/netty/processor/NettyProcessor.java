@@ -1,4 +1,4 @@
-package org.paul.core.netty;
+package org.paul.core.netty.processor;
 
 import org.paul.core.context.HttpRequestWrapper;
 

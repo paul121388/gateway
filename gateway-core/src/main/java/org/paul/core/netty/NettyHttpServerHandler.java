@@ -1,10 +1,10 @@
 package org.paul.core.netty;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
 import org.paul.core.context.HttpRequestWrapper;
+import org.paul.core.netty.processor.NettyProcessor;
 
 public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
     // netty封装好的适配器

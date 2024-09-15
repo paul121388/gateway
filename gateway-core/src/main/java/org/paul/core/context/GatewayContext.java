@@ -5,7 +5,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.paul.common.utils.AssertUtil;
 import org.paul.core.reponse.GatewayResponse;
 import org.paul.core.request.GatewayRequest;
-import org.paul.common.rule.Rule;
+import org.paul.common.config.Rule;
 
 /**
  * @PROJECT_NAME: api-gateway
