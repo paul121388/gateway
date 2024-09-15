@@ -32,7 +32,7 @@ public class ConfigLoader {
 
     // 核心加载流程
     // load方法，加载配置，有一定优先级，高优先级会覆盖低优先级
-    // 优先级：运行参数 -> 启动时jvm参数-> 环境变量 -> 配置文件 -> 默认值
+    // 优先级：运行参数14444 -> 启动时jvm参数19999 -> 环境变量9499 -> 配置文件9899 -> 默认值 9888
     public Config load(String[] args) {
         // 由低到高实现
         // new相当于使用默认值
@@ -51,6 +51,11 @@ public class ConfigLoader {
         loadFromArgs(args);
         return config;
     }
+
+    /**
+     * 启动时，运行参数读取配置
+     * @param args
+     */
     private void loadFromArgs(String[] args){
         // 例子：指定端口号 --port = 1234
         // 如果args不为空
@@ -62,7 +67,7 @@ public class ConfigLoader {
                 if(arg.startsWith("--") && arg.contains("=")){
                     // 将值放入properties中，需要对数据进行截断
                     properties.put(arg.substring(2, arg.indexOf("=")),
-                            arg.indexOf("=") + 1);
+                            arg.substring(arg.indexOf("=") + 1));
                 }
             }
             // 将properties赋值到config
@@ -76,7 +81,7 @@ public class ConfigLoader {
      */
     private void  loadFromJvm(){
         Properties properties = System.getProperties();
-        PropertiesUtils.properties2Object(properties, config);
+        PropertiesUtils.properties2Object(properties, config, JVM_PREFIX);
     }
 
     /**
@@ -90,7 +95,7 @@ public class ConfigLoader {
         // 将环境变量放入Properties
         properties.putAll(env);
         // 拷贝到config
-        PropertiesUtils.properties2Object(properties, config);
+        PropertiesUtils.properties2Object(properties, config, ENV_PREFIX);
     }
 
     /**

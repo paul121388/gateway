@@ -1,5 +1,8 @@
 package org.paul.core;
 
+import lombok.Data;
+
+@Data
 public class Config {
     // 网关对外暴露的端口
     private int port = 9888;
