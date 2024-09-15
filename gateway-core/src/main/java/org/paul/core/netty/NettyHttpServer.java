@@ -27,11 +27,16 @@ public class NettyHttpServer implements LifeCycle {
     private final Config config;
 
     /**
-     * 封装netty的属性，线程组，启动器
+     * 封装netty的属性，
+     * 线程组:用于处理网络事件
+     * 启动器:Netty 中用于启动服务端的辅助类
+     * 核心处理器（自定义）:用于处理业务逻辑
      */
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupWorker;
+
+    private NettyProcessor nettyProcessor;
 
     /**
      * 实现NettyHttpServer构造方法
@@ -102,18 +107,26 @@ public class NettyHttpServer implements LifeCycle {
                 .group(eventLoopGroupBoss, eventLoopGroupWorker)
                 .channel(useEpoll()? EpollServerSocketChannel.class: NioServerSocketChannel.class)
                 .localAddress(new InetSocketAddress(config.getPort()))
+
+                // 调用 childHandler 方法来设置一个 ChannelInitializer，这是一个特殊的处理器，用于配置新创建的 Channel 的 ChannelPipeline
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel channel) throws Exception {
                         channel.pipeline().addLast(
+                                // 这是一个 Netty 提供的编解码器，用于处理 HTTP 请求和响应。它将字节流转换为 HttpRequest 和 HttpResponse 对象，反之亦然
                                 new HttpServerCodec(),
+
+                                // 聚合器（Aggregator）：由于 HTTP 请求可能分布在多个 TCP 数据包中，
+                                // Netty 使用了一个叫做 HttpObjectAggregator 的处理器来将这些片段聚合成一个完整的 HTTP 请求。
+                                // 这个处理器确保了即使请求是分块传输的，应用程序也会接收到一个完整的 FullHttpRequest 对象
                                 new HttpObjectAggregator(config.getHttpMaxContentLength()),
                                 new NettyServerConnectManagerHandler(),
-                                new NettyHttpServerHandler()
+                                new NettyHttpServerHandler(nettyProcessor)
                         );
                     }
                 });
         try {
+            // 绑定服务器到指定端口并同步等待绑定完成
             this.serverBootstrap.bind().sync();
             log.info("server startup on port {}", config.getPort());
         }catch (Exception e){
