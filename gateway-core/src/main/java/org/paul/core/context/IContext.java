@@ -50,7 +50,7 @@ public interface IContext {
      * @return
      */
     boolean isRunning();
-    boolean isWrittened();
+    boolean isWritten();
     boolean isCompleted();
     boolean isTerminted();
 

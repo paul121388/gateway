@@ -71,7 +71,7 @@ public class BaseContext implements IContext {
     }
 
     @Override
-    public boolean isWrittened() {
+    public boolean isWritten() {
         return this.status == Written;
     }
 

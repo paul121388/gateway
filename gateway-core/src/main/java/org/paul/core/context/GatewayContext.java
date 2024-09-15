@@ -3,7 +3,7 @@ package org.paul.core.context;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
 import org.paul.common.utils.AssertUtil;
-import org.paul.core.reponse.GatewayResponse;
+import org.paul.core.response.GatewayResponse;
 import org.paul.core.request.GatewayRequest;
 import org.paul.common.config.Rule;
 
