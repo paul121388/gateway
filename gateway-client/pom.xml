@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>gateway-client</artifactId>
+    <description>提供给下游服务使用，把下游服务注册到注册中心，让网关感知，从而转发请求</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
