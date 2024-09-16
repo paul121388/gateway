@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class Application {
 
     @GetMapping("/http-demo/ping")
-    public String ping() {return "pong";}
+    public String ping() {return "/http-demo/ping：pong";}
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

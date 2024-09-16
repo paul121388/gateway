@@ -12,6 +12,7 @@
         <module name="gateway-common" />
         <module name="gateway-register-center" />
         <module name="backend-dubbo-server" />
+        <module name="gateway-register-center-api" />
         <module name="gateway-core" />
         <module name="gateway-config-center" />
       </profile>
