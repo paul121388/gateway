@@ -64,7 +64,5 @@ public class NettyHttpClient implements LifeCycle {
                 log.error("NettyHttpClient shutdown exception", e);
             }
         }
-
-
     }
 }
