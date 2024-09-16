@@ -8,7 +8,9 @@ import com.alibaba.nacos.api.naming.NamingMaintainService;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.Service;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.common.executor.NameThreadFactory;
 import com.alibaba.nacos.common.utils.CollectionUtils;
@@ -19,6 +21,7 @@ import org.paul.common.constants.GatewayConst;
 import org.paul.gateway.register.center.api.RegisterCenter;
 import org.paul.gateway.register.center.api.RegisterCenterListener;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -147,10 +150,45 @@ public class NacosRegisterCenter implements RegisterCenter {
         }
     }
 
+
+    // 监听到事件后，做回调处理
     public class NacosRegisterListener implements EventListener{
 
         @Override
         public void onEvent(Event event) {
+            // 首先判断event的类型，如果时注册中心的event
+            if(event instanceof NamingEvent){
+                // 强转event
+                NamingEvent namingEvent = (NamingEvent) event;
+                // 获取服务名称
+                String serviceName = namingEvent.getServiceName();
+
+                try{
+                    // 获取服务定义信息，通过nacos的api获取，传入服务名和环境
+                    Service service = namingMaintainService.queryService(serviceName, env);
+
+                    // 获取元信息，即JSON数据
+                    String s = service.getMetadata().get(GatewayConst.META_DATA_KEY);
+                    // 反序列化，获得自己写的服务定义
+                    ServiceDefinition serviceDefinition = JSON.parseObject(s, ServiceDefinition.class);
+
+                    // 通过nacos的api获取服务实例信息
+                    List<Instance> allInstances = namingService.getAllInstances(serviceName, env);
+                    // new一个set，接收上述信息
+                    Set<ServiceInstance> set = new HashSet<>();
+                    // 循环进行反序列化
+                    for(Instance instance: allInstances){
+                        JSON.parseObject(instance.getMetadata().get(GatewayConst.META_DATA_KEY), ServiceInstance.class);
+                    }
+
+                    // 调用监听器
+                    registerCenterListenerList.stream()
+                            .forEach(l -> l.onChange(serviceDefinition, set));
+                }catch (NacosException e){
+                    throw new RuntimeException(e);
+                }
+
+            }
 
         }
     }
