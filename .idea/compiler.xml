@@ -8,9 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="backend-http-server" />
+        <module name="gateway-register-center-nacos-impl" />
         <module name="gateway-client" />
         <module name="gateway-common" />
-        <module name="gateway-register-center" />
         <module name="backend-dubbo-server" />
         <module name="gateway-register-center-api" />
         <module name="gateway-core" />
