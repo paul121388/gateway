@@ -12,6 +12,7 @@ import org.paul.gateway.register.center.api.RegisterCenter;
 import org.paul.gateway.register.center.api.RegisterCenterListener;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import static org.paul.common.constants.BasicConst.COLON_SEPARATOR;
@@ -48,7 +49,14 @@ public class Bootstrap {
 
     private static RegisterCenter registerAndSubscribe(Config config) {
         //连接注册中心，将注册中心的实例加载到本地
-        final RegisterCenter registerCenter = null;
+        ServiceLoader<RegisterCenter> serviceLoader = ServiceLoader.load(RegisterCenter.class);
+        final RegisterCenter registerCenter = serviceLoader.findFirst().orElseThrow(() -> {
+            log.error("not found RegisterCenter impl");
+            return new RuntimeException("not found RegisterCenter impl");
+        });
+        registerCenter.init(config.getRegistryAddress(), config.getEnv());
+
+
         // 构造网关的服务定义和服务实例
         ServiceDefinition serviceDefinition = buildGatewayServiceDefinition(config);
         ServiceInstance serviceInstance = buildGatewayServiceInstance(config);
