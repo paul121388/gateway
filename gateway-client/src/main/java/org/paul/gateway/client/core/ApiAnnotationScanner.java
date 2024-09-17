@@ -32,7 +32,6 @@ public class ApiAnnotationScanner {
 
     /**
      * 扫描传入的bean对象，返回服务定义
-     *
      * @param bean
      * @param args
      * @return
