@@ -43,7 +43,7 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
     // 保存处理过的
     private Set<Object> set = new HashSet<>();
 
-    protected SpringMVCClientRegisterManager(ApiProperties apiProperties) {
+    public SpringMVCClientRegisterManager(ApiProperties apiProperties) {
         super(apiProperties);
     }
 
