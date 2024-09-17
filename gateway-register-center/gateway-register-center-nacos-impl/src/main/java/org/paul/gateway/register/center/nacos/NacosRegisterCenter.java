@@ -1,4 +1,4 @@
-package org.paul.register.center.nacos;
+package org.paul.gateway.register.center.nacos;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +45,7 @@ public class NacosRegisterCenter implements RegisterCenter {
     private NamingMaintainService namingMaintainService;
 
     // 维护一个list，存放注册中心的监听器
-    private List<RegisterCenterListener> registerCenterListenerList;
+    private List<RegisterCenterListener> registerCenterListenerList= new CopyOnWriteArrayList<>();
 
     @Override
     public void init(String registerAddress, String env) {

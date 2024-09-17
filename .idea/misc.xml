@@ -6,6 +6,9 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/gateway-register-center/gateway-register-center-api/pom.xml" />
+        <option value="$PROJECT_DIR$/gateway-register-center/gateway-register-center-nacos-impl/pom.xml" />
+        <option value="$PROJECT_DIR$/gateway-config-center/gateway-config-center-nacos-impl/pom.xml" />
+        <option value="$PROJECT_DIR$/gateway-config-center/gateway-config-center-api/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
