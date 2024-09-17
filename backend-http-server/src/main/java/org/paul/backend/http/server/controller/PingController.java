@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ApiService(serviceId = "backend-http-server", protocol = ApiProtocol.HTTP, patternPath = "/http-server/**")
 public class PingController {
 
-    @Autowired
+    @Autowired(required = false)
     private ApiProperties apiProperties;
 
     @ApiInvoker(path = "/http-server/ping")
