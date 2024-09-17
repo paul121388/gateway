@@ -1,5 +1,6 @@
 package org.paul.gateway.client.support;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.paul.common.config.ServiceDefinition;
 import org.paul.common.config.ServiceInstance;
@@ -12,13 +13,14 @@ import java.util.ServiceLoader;
 @Slf4j
 public abstract class AbstractClientRegisterManager {
     // 公共的属性封装在抽象类种
+    @Getter
     private ApiProperties apiProperties;
 
     // 注册中心的客户端
     private RegisterCenter registerCenter;
 
     // 构造方法protected，本类及子类使用
-    protected AbstractClientRegisterManager(ApiProperties apiProperties, RegisterCenter registerCenter) {
+    protected AbstractClientRegisterManager(ApiProperties apiProperties) {
         this.apiProperties = apiProperties;
 
         // 初始化注册中心对象，因为使用了java的spi，所以需要添加配置，
