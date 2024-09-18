@@ -9,13 +9,12 @@ import org.paul.common.utils.JSONUtil;
 
 /**
  * @author paul
- * @date 2019/8/3
  * @description 网关回复消息对象
  */
 @Data
 public class GatewayResponse {
     /**
-     * 响应头
+     * 标准响应头
      */
     private HttpHeaders responseHeaders = new DefaultHttpHeaders();
 
@@ -66,6 +65,7 @@ public class GatewayResponse {
      * @return
      */
     public static GatewayResponse buildGatewayResponse(ResponseCode code, Object... args){
+        //用于设置响应体
         ObjectNode objectNode = JSONUtil.createObjectNode();
         objectNode.put(JSONUtil.STATUS, code.getStatus().code());
         objectNode.put(JSONUtil.CODE, code.getCode());

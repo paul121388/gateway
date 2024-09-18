@@ -213,11 +213,12 @@ public class GatewayRequest implements IGatewayRequest {
         String body = getBody();
         if (isFormPost()) {
             if (postParams == null) {
-                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(body, charset);
+                //通过参数解析器获取请求体，放到postParams的Map中
+                QueryStringDecoder queryStringDecoder = new QueryStringDecoder(body, false);
                 postParams = queryStringDecoder.parameters();
             }
-
-            if (postParams == null || !postParams.isEmpty()) {
+            //如果真的没有参数，返回null
+            if (postParams == null || postParams.isEmpty()) {
                 return null;
             } else {
                 return postParams.get(name);
@@ -237,6 +238,7 @@ public class GatewayRequest implements IGatewayRequest {
      * @return
      */
     public boolean isFormPost() {
+        //判断方法，并且contentType为FormData或APPLICATION_X_WWW_FORM_URLENCODED
         return HttpMethod.POST.equals(method) &&
                 (contentType.startsWith(HttpHeaderValues.FORM_DATA.toString())
                 || contentType.startsWith(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()));
@@ -247,6 +249,7 @@ public class GatewayRequest implements IGatewayRequest {
      * @return
      */
     public boolean isJsonPost() {
+        //首先判断是否为post请求
         return HttpMethod.POST.equals(method) &&
                 contentType.startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
     }
@@ -273,21 +276,25 @@ public class GatewayRequest implements IGatewayRequest {
 
     @Override
     public void addHeader(CharSequence name, String value) {
+        //向请求构建器requestBuilder中添加对应的header
         requestBuilder.addHeader(name, value);
     }
 
     @Override
     public void setHeader(CharSequence name, String value) {
+        //向请求构建器requestBuilder中设置对应的header
         requestBuilder.setHeader(name, value);
     }
 
     @Override
     public void addQueryParam(String name, String value) {
+        //向请求构建器requestBuilder中设置对应的属性值和参数
         requestBuilder.addQueryParam(name, value);
     }
 
     @Override
     public void addFormParam(String name, String value) {
+        //首先判断时form
         if(isFormPost()){
             requestBuilder.addFormParam(name, value);
         }
@@ -305,6 +312,7 @@ public class GatewayRequest implements IGatewayRequest {
 
     @Override
     public String getFinalUrl() {
+        //协议+主机+路径
         return modifyScheme + modifyHost + modifyPath;
     }
 

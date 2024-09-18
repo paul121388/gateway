@@ -59,6 +59,7 @@ public class NacosRegisterCenter implements RegisterCenter {
             this.namingMaintainService = NamingMaintainFactory.createMaintainService(registerAddress);
             this.namingService = NamingFactory.createNamingService(registerAddress);
         } catch (NacosException e) {
+            log.info("create failed");
             throw new RuntimeException(e);
         }
     }
@@ -76,7 +77,7 @@ public class NacosRegisterCenter implements RegisterCenter {
             nacosInstance.setMetadata(Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceInstance)));
 
             // 注册，调用nacos的api，传入实例id，环境,nacos的实例
-            namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
+            this.namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
 
             // 更新服务，将服务的信息放在map中，key为meta，value为序列化的服务定义
             namingMaintainService.updateService(serviceDefinition.getServiceId(), env, 0,
@@ -107,7 +108,7 @@ public class NacosRegisterCenter implements RegisterCenter {
         // 如果新加入的服务，我们不知道，为了将这些任务假如，因此需要定时任务，循环执行上述订阅服务的方法
         ScheduledExecutorService scheduledThreadPool = Executors
                 .newScheduledThreadPool(1, new NameThreadFactory("doSubcribeAllService"));
-        scheduledThreadPool.scheduleWithFixedDelay(()->doSubcribeAllService(), 10, 10, TimeUnit.SECONDS);
+        scheduledThreadPool.scheduleWithFixedDelay(()->doSubcribeAllService(), 1, 1, TimeUnit.SECONDS);
     }
 
     private void doSubcribeAllService(){

@@ -24,22 +24,32 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class NettyHttpServer implements LifeCycle {
     /**
+     * 封装属性
+     * 实现构造方法
+     * 实现init方法
+     * epoll优化
+     * 实现start方法
+     * 实现shutdown方法
+     */
+
+    /**
      * 定义属性
      */
     private final Config config;
 
     /**
      * 封装netty的属性，
-     * 线程组:用于处理网络事件
-     * 启动器:Netty 中用于启动服务端的辅助类
-     * 核心处理器（自定义）:用于处理业务逻辑
      */
+    //启动器:Netty 中用于启动服务端的辅助类
     private ServerBootstrap serverBootstrap;
+
+    //线程组:用于处理网络事件
     private EventLoopGroup eventLoopGroupBoss;
 
     @Getter
     private EventLoopGroup eventLoopGroupWorker;
 
+    //核心处理器（自定义）:用于处理业务逻辑
     private final NettyProcessor nettyProcessor;
 
     /**
@@ -61,9 +71,9 @@ public class NettyHttpServer implements LifeCycle {
     /**
      * init方法，初始化
      * 如果支持epoll，使用epoll对应的api
-     * new serverBootstrap 作为netty服务的启动
-     * new eventLoopGroupBoss，构造时从config传入配置，定义线程工厂，给线程池起名字
-     * new eventLoopGroupWorker，构造时从config传入配置，定义线程工厂，给线程池起名字
+     *      new serverBootstrap 作为netty服务的启动
+     *      new eventLoopGroupBoss，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
+     *      new eventLoopGroupWorker，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
      */
     @Override
     public void init() {
@@ -93,30 +103,23 @@ public class NettyHttpServer implements LifeCycle {
 
     /**
      * start方法，启动过程逻辑
-     *      使用启动器，指定group
-     *      指定channel，判断是否支持epoll，是：使用epoll的api，否则使用默认
-     *      配置端口
-     *      配置channelhandler
-     *      初始化channel：添加一系列处理器
-     *          netty提供的http编码器
-     *          netty提供的http对象聚合器，参数：最大长度
-     *          链接管理器：netty生命周期的管理，已经封装好了
-     *          核心处理逻辑
-     * try
-     *      启动：bind.sync
-     *      添加日志：打印端口
      */
     @Override
     public void start() {
+        //使用启动器，指定group
         this.serverBootstrap
                 .group(eventLoopGroupBoss, eventLoopGroupWorker)
-                .channel(useEpoll()? EpollServerSocketChannel.class: NioServerSocketChannel.class)
+                //指定channel，判断是否支持epoll，是：使用epoll的api，否则使用默认
+                .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                //配置端口
                 .localAddress(new InetSocketAddress(config.getPort()))
 
-                // 调用 childHandler 方法来设置一个 ChannelInitializer，这是一个特殊的处理器，用于配置新创建的 Channel 的 ChannelPipeline
+                //配置channelhandler
+                //调用 childHandler 方法来设置一个 ChannelInitializer，这是一个特殊的处理器，用于配置新创建的 Channel 的 ChannelPipeline
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel channel) throws Exception {
+                        //初始化channel：添加一系列处理器
                         channel.pipeline().addLast(
                                 // 这是一个 Netty 提供的编解码器，用于处理 HTTP 请求和响应。它将字节流转换为 HttpRequest 和 HttpResponse 对象，反之亦然
                                 new HttpServerCodec(),
@@ -125,31 +128,35 @@ public class NettyHttpServer implements LifeCycle {
                                 // Netty 使用了一个叫做 HttpObjectAggregator 的处理器来将这些片段聚合成一个完整的 HTTP 请求。
                                 // 这个处理器确保了即使请求是分块传输的，应用程序也会接收到一个完整的 FullHttpRequest 对象
                                 new HttpObjectAggregator(config.getHttpMaxContentLength()),
+
+                                //链接管理器：netty生命周期的管理，已经封装好了
                                 new NettyServerConnectManagerHandler(),
+
+                                //自定义的核心处理逻辑
                                 new NettyHttpServerHandler(nettyProcessor)
                         );
                     }
                 });
         try {
-            // 绑定服务器到指定端口并同步等待绑定完成
+            // 绑定服务器到指定端口并同步等待启动
             this.serverBootstrap.bind().sync();
             log.info("server startup on port {}", config.getPort());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
      * 优雅停机shutdown
-     *      两个线程组是否为空
+     * 两个线程组是否为空
      *      调用api停止
      */
     @Override
     public void shutdown() {
-        if(eventLoopGroupBoss != null){
+        if (eventLoopGroupBoss != null) {
             eventLoopGroupBoss.shutdownGracefully();
         }
-        if(eventLoopGroupWorker != null){
+        if (eventLoopGroupWorker != null) {
             eventLoopGroupWorker.shutdownGracefully();
         }
     }

@@ -90,7 +90,7 @@ public class GatewayContext extends BaseContext {
 
     // 获取指定key的上下文参数，如果没有返回默认值
     public <T> T getOptionalAttribute(String key, T defaultValue) {
-        return (T) attributes.getOrDefault(defaultValue, defaultValue);
+        return (T) attributes.getOrDefault(key, defaultValue);
     }
 
     // 获取filterId指定的过滤器配置信息
@@ -132,8 +132,8 @@ public class GatewayContext extends BaseContext {
         return response;
     }
 
-    public void setResponse(GatewayResponse response) {
-        this.response = response;
+    public void setResponse(Object response) {
+        this.response = (GatewayResponse) response;
     }
 
     public Rule getRule() {

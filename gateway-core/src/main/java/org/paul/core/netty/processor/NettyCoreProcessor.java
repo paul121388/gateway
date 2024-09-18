@@ -24,8 +24,17 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * 定义接口
+ * 最小可用的版本
+ * 路由函数实现
+ * 获取异步配置，实现complete犯法
+ * 异常处理
+ * 写回响应信息并释放资源
+ */
 @Slf4j
 public class NettyCoreProcessor implements NettyProcessor {
+
     @Override
     public void process(HttpRequestWrapper httpRequestWrapper) {
 
@@ -64,7 +73,9 @@ public class NettyCoreProcessor implements NettyProcessor {
      */
     private void doWriteAndRelease(ChannelHandlerContext ctx, FullHttpRequest request, FullHttpResponse response) {
         ctx.writeAndFlush(request)
+                //关闭channel
                 .addListener(ChannelFutureListener.CLOSE);
+        //释放request
         ReferenceCountUtil.release(request);
     }
 
@@ -98,15 +109,6 @@ public class NettyCoreProcessor implements NettyProcessor {
 
     /**
      * complete方法：参数：请求，响应，throwable，gatewayContext上下文
-     *      释放资源
-     *      try
-     *          判断是否由异常
-     *          获取url
-     *              对异常进行处理
-     *                  超时异常：打印日志（url），设置gatewayContext的throwable，记录异常code
-     *                  如果时其他异常，记录必要信息：唯一id，url，响应码
-     *          没有异常
-     *              正常响应
      *       catch
      *          在gatewayContext中记录信息，打印日志
      *       finally
@@ -114,18 +116,23 @@ public class NettyCoreProcessor implements NettyProcessor {
      *          调用辅助类responseHelper，写回数据
      */
     void complete(Request request, Response response, Throwable throwable, GatewayContext gatewayContext){
+        //释放资源
         gatewayContext.releaseRequest();
 
         try {
+            //判断是否有异常
             if(Objects.nonNull(throwable)){
                 String url = request.getUrl();
+                //超时异常：打印日志（url），设置gatewayContext的throwable，记录异常code
                 if(throwable instanceof TimeoutException){
                     log.warn("complete time out {}", url);
                     gatewayContext.setThrowable(new ResponseException(ResponseCode.REQUEST_TIMEOUT));
                 }else{
+                    //如果时其他异常，记录必要信息：唯一id，url，响应码
                     gatewayContext.setThrowable(new ConnectException(throwable, gatewayContext.getUniqueId(), url, ResponseCode.HTTP_RESPONSE_ERROR));
                 }
             }else{
+                //正常的话，往上下文写入response
                 gatewayContext.setResponse(GatewayResponse.buildGatewayResponse(response));
             }
         } catch (Throwable t) {

@@ -12,6 +12,12 @@ import org.paul.core.helper.AsyncHttpHelper;
 
 import java.io.IOException;
 
+/**
+ * 主要用于下游服务请求转发
+ * 实现LifeCycle
+ * 封装属性
+ * 实现LifeCycle中的init，start，shutdown方法
+ */
 @Slf4j
 public class NettyHttpClient implements LifeCycle {
     // 封装属性
@@ -27,20 +33,30 @@ public class NettyHttpClient implements LifeCycle {
         init();
     }
 
+    /**
+     * 初始化AsyncHttpClient asyncHttpClient
+     */
     @Override
     public void init() {
         // new 默认的AsyncHttpClientConfig的builder对象，并添加工作线程组
-        // 添加超时配置，从config中获取链接超时异常，请求超时异常，最大重试次数，
-        // 设置一个池化的ByteBuffer分配器，设置压缩，设置最大连接数，设置每台服务最大连接数，设置池化连接超时
+        // 添加配置，从config中获取
         DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder()
                 .setEventLoopGroup(eventLoopGroupWorker)
+                //链接超时时间
                 .setConnectTimeout(config.getHttpConnectTimeout())
+                //请求超时时间
                 .setRequestTimeout(config.getHttpRequestTimeout())
+                //最大重试次数
                 .setMaxRedirects(config.getHttpMaxRequestRetry())
+                //池化的ByteBuf分配器
                 .setAllocator(PooledByteBufAllocator.DEFAULT)
+                //能否对信息压缩
                 .setCompressionEnforced(true)
+                //设置最大连接数
                 .setMaxConnections(config.getHttpMaxConnections())
+                //设置每台服务最大连接数
                 .setMaxConnectionsPerHost(config.getHttpConnectionsPerHost())
+                //设置池化连接超时
                 .setPooledConnectionIdleTimeout(config.getHttpPooledConnectionIdleTimeout());
 
         // 通过builder初始化AsyncHttpClient

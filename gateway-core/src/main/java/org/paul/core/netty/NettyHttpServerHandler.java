@@ -7,8 +7,13 @@ import org.paul.core.context.HttpRequestWrapper;
 import org.paul.core.netty.processor.NettyProcessor;
 
 public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
-    // netty封装好的适配器
+    /**
+     * 继承ChannelInboundHandlerAdapter
+     * 实现channelRead
+     * 把逻辑委托给NettyProcessor
+     */
 
+    // netty封装好的适配器
     // 定义final属性 NettyProcessor
     private final NettyProcessor nettyProcessor;
     // 构造

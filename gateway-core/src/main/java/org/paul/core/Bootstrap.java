@@ -27,31 +27,31 @@ public class Bootstrap {
         Config config = ConfigLoader.getInstance().load(args);
         System.out.println(config.getPort());
 
-        //插件初始化
-        //配置中心管理器初始化，连接配置中心，监听配置的新增、修改、删除
-        ServiceLoader<ConfigCenter> serviceLoader = ServiceLoader.load(ConfigCenter.class);
-        final ConfigCenter configCenter = serviceLoader.findFirst().orElseThrow(() -> {
-            log.error("not found ConfigCenter impl");
-            return new RuntimeException("not found ConfigCenter impl");
-        });
-        configCenter.init(config.getRegistryAddress(), config.getEnv());
-        configCenter.subscribeRulesChange(ruleList -> DynamicConfigManager.getInstance()
-                .putAllRule(ruleList));
+//        //插件初始化
+//        //配置中心管理器初始化，连接配置中心，监听配置的新增、修改、删除
+//        ServiceLoader<ConfigCenter> serviceLoader = ServiceLoader.load(ConfigCenter.class);
+//        final ConfigCenter configCenter = serviceLoader.findFirst().orElseThrow(() -> {
+//            log.error("not found ConfigCenter impl");
+//            return new RuntimeException("not found ConfigCenter impl");
+//        });
+//        configCenter.init(config.getRegistryAddress(), config.getEnv());
+//        configCenter.subscribeRulesChange(ruleList -> DynamicConfigManager.getInstance()
+//                .putAllRule(ruleList));
 
         //启动容器
         Container container = new Container(config);
         container.start();
 
-        final RegisterCenter registerCenter = registerAndSubscribe(config);
-
-        //服务优雅关机，收到kill信号时调用
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                registerCenter.deregister(buildGatewayServiceDefinition(config), buildGatewayServiceInstance(config));
-                container.shutdown();
-            }
-        });
+//        final RegisterCenter registerCenter = registerAndSubscribe(config);
+//
+//        //服务优雅关机，收到kill信号时调用
+//        Runtime.getRuntime().addShutdownHook(new Thread() {
+//            @Override
+//            public void run() {
+//                registerCenter.deregister(buildGatewayServiceDefinition(config), buildGatewayServiceInstance(config));
+//                container.shutdown();
+//            }
+//        });
     }
 
     private static RegisterCenter registerAndSubscribe(Config config) {

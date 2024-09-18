@@ -84,7 +84,7 @@ public class Rule implements Comparable<Rule>, Serializable {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             FilterConfig that = (FilterConfig) o;
-            return Objects.equals(id, that.id);
+            return id.equals(that.id);
         }
 
         @Override
@@ -144,7 +144,7 @@ public class Rule implements Comparable<Rule>, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Rule rule = (Rule) o;
-        return Objects.equals(id, rule.id);
+        return id.equals(rule.id);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.paul.core;
 import lombok.Data;
 
 @Data
+//网关的配置
 public class Config {
     // 网关对外暴露的端口
     private int port = 9888;
@@ -11,7 +12,7 @@ public class Config {
     private String applicationName = "api-gateway";
 
     // 注册中心的地址
-    private String registryAddress = "http://127.0.0.1:8848";
+    private String registryAddress = "127.0.0.1:8848";
 
     // 多环境配置
     private String env = "dev";
