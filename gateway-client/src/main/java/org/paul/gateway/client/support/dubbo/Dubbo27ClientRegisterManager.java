@@ -56,6 +56,7 @@ public class Dubbo27ClientRegisterManager extends AbstractClientRegisterManager 
     }
 
     private void doRegisterDubbo(ServiceBean serviceBean) {
+        //获取真正的bean对象
         Object ref = serviceBean.getRef();
         if(set.contains(ref)){
             return;
@@ -70,6 +71,7 @@ public class Dubbo27ClientRegisterManager extends AbstractClientRegisterManager 
 
         // 服务实例
         ServiceInstance serviceInstance = new ServiceInstance();
+
         String localIp = NetUtils.getLocalIp();
         int port = serviceBean.getProtocol().getPort();
         String serviceInstanceId = localIp + BasicConst.COLON_SEPARATOR + port;

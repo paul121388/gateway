@@ -18,6 +18,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.Servlet;
 
 @Configuration
+//当 ApiProperties 类被启用后，Spring 框架会将 api 配置前缀下的属性绑定到该类的属性上。
+// 这意味着，在 application.properties 文件中，所有以 api. 开头的属性都会被绑定到 ApiProperties 类中的相应属性
 @EnableConfigurationProperties(ApiProperties.class)
 @ConditionalOnProperty(prefix = "api", name = {"registerAddress"})
 public class ApiClientAutoConfiguration {

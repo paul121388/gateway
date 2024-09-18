@@ -18,6 +18,8 @@ public class NacosConfigCenter implements ConfigCenter {
     private static final String DATA_ID = "api-gateway";
     private String serverAddr;
     private String env;
+
+    //nacos封装好的，用于配置中心的交互
     private ConfigService configService;
 
     @Override
@@ -35,10 +37,12 @@ public class NacosConfigCenter implements ConfigCenter {
     @Override
     public void subscribeRulesChange(RulesChangeListener rulesChangeListener) {
         try {
-            // 初始化通知
+            // 初始化通知，DATAid用于标识，这个config是一个JSON
+            //{"rules":[{},{}]
             String config = configService.getConfig(DATA_ID, env, 5000);
             log.info("config from nacos{}", config);
 
+            //转成JSON数组后，再转为rule对象
             List<Rule> rules = JSON.parseObject(config).getJSONArray("rules").toJavaList(Rule.class);
             rulesChangeListener.onRulesChanged(rules);
 

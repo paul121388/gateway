@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.swing.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
     // 封装的属性
     private ApplicationContext applicationContext;
 
+    //需要服务的配置，比如端口，由spring封装好了
     @Resource
     private ServerProperties serverProperties;
 
@@ -50,7 +52,9 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
     @Override
     public void onApplicationEvent(ApplicationEvent applicationEvent) throws BeansException {
         if(applicationEvent instanceof ApplicationStartedEvent){
+            //如果是启动事件
             try {
+                //具体实现，把下游服务注册到服务中心
                 doRegisterSpringMvc();
             } catch (Exception e) {
                 log.error("doRegisterSpringMvc error", e);
@@ -61,11 +65,19 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
         }
     }
 
+    //具体注册方法的实现
     private void doRegisterSpringMvc() {
-        Map<String, RequestMappingHandlerMapping> allRequestMappings = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RequestMappingHandlerMapping.class,
-                true, false);
+        //目的是获取当前 Spring 应用程序上下文及其祖先上下文中所有 RequestMappingHandlerMapping 类型的 bean，并将它们存储在一个 Map 中
+        Map<String, RequestMappingHandlerMapping> allRequestMappings = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+                RequestMappingHandlerMapping.class, true, false);
+
+        //RequestMappingHandlerMapping 是 Spring 框架中的一个接口，它定义了用于处理 HTTP 请求的映射器（Handler Mapping）应该实现的方法。
+        // 这个接口是 Spring MVC 框架的一部分，将 HTTP 请求映射到控制器（Controller）的 @RequestMapping 注解方法
         for (RequestMappingHandlerMapping handleMapping : allRequestMappings.values()) {
+            //键是 RequestMappingInfo 对象，它包含了请求的详细信息，如 URL 模式、HTTP 方法等
+            //HandlerMethod 对象是一个用于表示 Spring MVC 控制器方法的对象，它包含了与控制器方法相关的所有信息，包括方法本身、控制器类以及方法执行时所需的参数类型等
             Map<RequestMappingInfo, HandlerMethod> handlerMethods = handleMapping.getHandlerMethods();
+
             for (Map.Entry<RequestMappingInfo, HandlerMethod> methodEntry : handlerMethods.entrySet()) {
                 HandlerMethod handlerMethod = methodEntry.getValue();
                 Class<?> clazz = handlerMethod.getBeanType();
@@ -82,12 +94,14 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
                     // 拿不到服务定义，直接跳过
                     continue;
                 }
+                set.add(bean);
 
-                // 重新扫描环境
+                // 重新设置ServiceDefinition环境
                 serviceDefinition.setEnvType(getApiProperties().getEnv());
 
                 // 服务实例
                 ServiceInstance serviceInstance = new ServiceInstance();
+
                 String localIp = NetUtils.getLocalIp();
                 int port = serverProperties.getPort();
                 String serviceInstanceId = localIp + BasicConst.COLON_SEPARATOR + port;

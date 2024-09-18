@@ -40,8 +40,9 @@ public class NacosRegisterCenter implements RegisterCenter {
     // 环境
     private String env;
 
-    // Nacos封装好的两个实例，用于维护服务实例信息和服务定义信息
+    // Nacos封装好的两个实例，用于维护服务实例信息
     private NamingService namingService;
+    //服务定义信息
     private NamingMaintainService namingMaintainService;
 
     // 维护一个list，存放注册中心的监听器
@@ -53,9 +54,9 @@ public class NacosRegisterCenter implements RegisterCenter {
         this.registerAddress = registerAddress;
         this.env = env;
 
-        // 设置两个实例
+        // 设置两个维护服务实例信息和服务定义信息的实例
         try {
-            // 工厂模式创建
+            // 工厂模式创建，参数为注册中心的地址
             this.namingMaintainService = NamingMaintainFactory.createMaintainService(registerAddress);
             this.namingService = NamingFactory.createNamingService(registerAddress);
         } catch (NacosException e) {
@@ -67,7 +68,7 @@ public class NacosRegisterCenter implements RegisterCenter {
     @Override
     public void register(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance) {
         try {
-            // 构造Nacos的实例信息
+            // 构造服务在Nacos中的信息
             Instance nacosInstance = new Instance();
             nacosInstance.setInstanceId(serviceInstance.getServiceInstanceId());
             nacosInstance.setIp(serviceInstance.getIp());
@@ -76,8 +77,8 @@ public class NacosRegisterCenter implements RegisterCenter {
             // 设置元信息，将实例的信息序列化后放在里面
             nacosInstance.setMetadata(Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceInstance)));
 
-            // 注册，调用nacos的api，传入实例id，环境,nacos的实例
-            this.namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
+            // 注册，调用nacos的api，传入实例id，环境,服务在Nacos中的信息
+            namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
 
             // 更新服务，将服务的信息放在map中，key为meta，value为序列化的服务定义
             namingMaintainService.updateService(serviceDefinition.getServiceId(), env, 0,
@@ -105,7 +106,7 @@ public class NacosRegisterCenter implements RegisterCenter {
         registerCenterListenerList.add(registerCenterListener);
         doSubcribeAllService();
 
-        // 如果新加入的服务，我们不知道，为了将这些任务假如，因此需要定时任务，循环执行上述订阅服务的方法
+        // 如果新加入的服务，我们不知道，为了将这些任务加入，因此需要定时任务，循环执行上述订阅服务的方法
         ScheduledExecutorService scheduledThreadPool = Executors
                 .newScheduledThreadPool(1, new NameThreadFactory("doSubcribeAllService"));
         scheduledThreadPool.scheduleWithFixedDelay(()->doSubcribeAllService(), 1, 1, TimeUnit.SECONDS);
@@ -144,8 +145,6 @@ public class NacosRegisterCenter implements RegisterCenter {
                 // 获取下一页
                 serviceList = namingService.getServicesOfServer(++pageNo, pageSize, env).getData();
             }
-
-
         }catch (NacosException e){
             throw new RuntimeException(e);
         }

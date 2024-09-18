@@ -13,10 +13,12 @@ import java.util.ServiceLoader;
 @Slf4j
 public abstract class AbstractClientRegisterManager {
     // 公共的属性封装在抽象类种
+
+    //封装了注册中心地址registerAddress和环境env
     @Getter
     private ApiProperties apiProperties;
 
-    // 注册中心的客户端
+    // 注册中心的客户端，为一个接口，具体实现的由jdk的spi机制载入
     private RegisterCenter registerCenter;
 
     // 构造方法protected，本类及子类使用
@@ -29,7 +31,7 @@ public abstract class AbstractClientRegisterManager {
         // 文件内容为具体实现org.paul.register.center.nacos.NacosRegisterCenter
         ServiceLoader<RegisterCenter> serviceLoader = ServiceLoader.load(RegisterCenter.class);
         // 通过serviceLoader拿到具体实现
-        registerCenter = serviceLoader.findFirst().orElseGet(()->{
+        registerCenter = serviceLoader.findFirst().orElseThrow(()->{
             // 拿不到，抛出异常
             log.error("not found registerCenter impl");
             throw new RuntimeException("not found registerCenter impl");
@@ -38,6 +40,7 @@ public abstract class AbstractClientRegisterManager {
 
     // 提供注册方法，参数：服务定义，服务实例
     protected void register(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance){
+        //直接调用注册中心的方法
         registerCenter.register(serviceDefinition, serviceInstance);
     }
 

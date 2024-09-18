@@ -31,7 +31,12 @@ public class ApiAnnotationScanner {
 
 
     /**
-     * 扫描传入的bean对象，返回服务定义
+     * 扫描传入的bean对象，返回服务定义，用于下游服务的注册
+     *
+     * 获取标记了ApiService的类，获取对应的属性值，
+     * 遍历里面的方法，获取标记了ApiInvoker的方法
+     * 根据不同的协议调用不同的invoker
+     * 最后设置SeriveceDefinition的属性值并返回
      * @param bean
      * @param args
      * @return
@@ -43,53 +48,52 @@ public class ApiAnnotationScanner {
         if (!aClass.isAnnotationPresent(ApiService.class)) {
             // 如果没有，直接返回空
             return null;
-        } else {
-            // 如果有，会拿到注解的相关数据
-            ApiService apiService = aClass.getAnnotation(ApiService.class);
-            // 获取apiService中的数据
-            String serviceId = apiService.serviceId();
-            ApiProtocol protocol = apiService.protocol();
-            String patternPath = apiService.patternPath();
-            String version = apiService.version();
+        }
+        // 如果有，会拿到注解的相关数据
+        ApiService apiService = aClass.getAnnotation(ApiService.class);
+        // 获取apiService中的数据
+        String serviceId = apiService.serviceId();
+        ApiProtocol protocol = apiService.protocol();
+        String patternPath = apiService.patternPath();
+        String version = apiService.version();
 
-            ServiceDefinition serviceDefinition = new ServiceDefinition();
+        ServiceDefinition serviceDefinition = new ServiceDefinition();
 
-            // 定义Map，用于存放ServiceInvoker
-            Map<String, ServiceInvoker> invokerMap = new HashMap<String, ServiceInvoker>();
+        // 定义Map，用于存放ServiceInvoker
+        Map<String, ServiceInvoker> invokerMap = new HashMap<String, ServiceInvoker>();
 
-            // 获取class的所有方法；遍历所有方法
-            Method[] methods = aClass.getMethods();
-            if (methods != null && methods.length > 0) {
-                for (Method method : methods) {
-                    // 获取添加了ApiInvoker注解的方法，获得ApiInvoker的path
-                    ApiInvoker annotation = method.getAnnotation(ApiInvoker.class);
-                    if (annotation == null) {
-                        // 如果为空，跳过
-                        continue;
-                    }
-                    String path = annotation.path();
-                    // 判断是什么协议
-                    switch (protocol) {
-                        case HTTP:
-                            HttpServiceInvoker httpServiceInvoker = createHttpServiceInvoker(path);
-                            invokerMap.put(path, httpServiceInvoker);
-                            break;
-                        case DUBBO:
-                            ServiceBean<?> serviceBean = (ServiceBean<?>) args[0];
-                            DubboServiceInvoker dubboServiceInvoker = createDubboServiceInvoker(path, serviceBean, method);
+        // 获取class的所有方法；遍历所有方法
+        Method[] methods = aClass.getMethods();
+        if (methods != null && methods.length > 0) {
+            for (Method method : methods) {
+                // 获取添加了ApiInvoker注解的方法，获得ApiInvoker的path
+                ApiInvoker annotation = method.getAnnotation(ApiInvoker.class);
+                if (annotation == null) {
+                    // 如果为空，即这个方法没有添加相关注解，跳过
+                    continue;
+                }
+                String path = annotation.path();
+                // 判断是什么协议
+                switch (protocol) {
+                    case HTTP:
+                        HttpServiceInvoker httpServiceInvoker = createHttpServiceInvoker(path);
+                        invokerMap.put(path, httpServiceInvoker);
+                        break;
+                    case DUBBO:
+                        ServiceBean<?> serviceBean = (ServiceBean<?>) args[0];
+                        DubboServiceInvoker dubboServiceInvoker = createDubboServiceInvoker(path, serviceBean, method);
 
-                            // 特殊处理，获取版本号
-                            String dubboVersion = dubboServiceInvoker.getVersion();
-                            // 如果版本号不为空，将当前服务定义的版本号设置为此版本号
-                            if (!StringUtils.isBlank(dubboVersion)) {
-                                version = dubboVersion;
-                            }
-                            // 放入invokerMap种
-                            invokerMap.put(path, dubboServiceInvoker);
-                            break;
-                        default:
-                            break;
-                    }
+                        // 特殊处理，获取版本号
+                        String dubboVersion = dubboServiceInvoker.getVersion();
+                        // 如果版本号不为空，将当前服务定义的版本号设置为此版本号
+                        if (!StringUtils.isBlank(dubboVersion)) {
+                            version = dubboVersion;
+                        }
+                        // 放入invokerMap种
+                        invokerMap.put(path, dubboServiceInvoker);
+                        break;
+                    default:
+                        break;
                 }
             }
             // 设置服务定义对应的属性
@@ -104,6 +108,7 @@ public class ApiAnnotationScanner {
 
             return serviceDefinition;
         }
+        return null;
     }
 
 

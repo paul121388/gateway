@@ -28,13 +28,11 @@ public class DynamicConfigManager {
         private static final DynamicConfigManager INSTANCE = new DynamicConfigManager();
     }
 
-
-    /***************** 	对服务定义缓存进行操作的系列方法 	***************/
-
     public static DynamicConfigManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
+    /***************** 	对服务定义缓存进行操作的系列方法 	***************/
     public void putServiceDefinition(String uniqueId,
                                      ServiceDefinition serviceDefinition) {
 
