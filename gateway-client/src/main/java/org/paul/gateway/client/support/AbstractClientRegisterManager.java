@@ -36,6 +36,7 @@ public abstract class AbstractClientRegisterManager {
             log.error("not found registerCenter impl");
             throw new RuntimeException("not found registerCenter impl");
         });
+        registerCenter.init(apiProperties.getRegisterAddress(), apiProperties.getEnv());
     }
 
     // 提供注册方法，参数：服务定义，服务实例
