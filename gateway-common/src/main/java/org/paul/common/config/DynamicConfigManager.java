@@ -1,9 +1,8 @@
 package org.paul.common.config;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -20,6 +19,12 @@ public class DynamicConfigManager {
 
     //	规则集合
     private ConcurrentHashMap<String /* ruleId */ , Rule>  ruleMap = new ConcurrentHashMap<>();
+
+    //路径规则map
+    private ConcurrentHashMap<String /* 路径 */, Rule> pathRuleMap = new ConcurrentHashMap<>();
+
+    //服务id，规则的list map
+    private ConcurrentHashMap<String /* 服务id */, List<Rule>> serviceIdRuleMap = new ConcurrentHashMap<>();
 
     private DynamicConfigManager() {
     }
@@ -103,9 +108,36 @@ public class DynamicConfigManager {
     }
 
     public void putAllRule(List<Rule> ruleList) {
-        Map<String, Rule> map = ruleList.stream()
-                .collect(Collectors.toMap(Rule::getId, r -> r));
-        ruleMap = new ConcurrentHashMap<>(map);
+        //规则id，规则的map
+        ConcurrentHashMap<String /* ruleId */, Rule> newRuleMap = new ConcurrentHashMap<>();
+        //路径规则map
+        ConcurrentHashMap<String /* 路径 */, Rule> newPathRuleMap = new ConcurrentHashMap<>();
+        //服务id，规则map
+        ConcurrentHashMap<String /* 服务id */, List<Rule>> newServiceIdRuleMap = new ConcurrentHashMap<>();
+
+        //将rule放入上述map中
+        for(Rule rule: ruleList){
+            //添加到ruleMap
+            newRuleMap.put(rule.getId(), rule);
+
+            //添加到serviceIdRuleMap
+            List<Rule> rules = newServiceIdRuleMap.get(rule.getServiceId());
+            if(rules == null){
+                rules = new ArrayList<>();
+            }
+            rules.add(rule);
+            newServiceIdRuleMap.put(rule.getServiceId(), rules);
+
+            //添加到pathRuleMap
+            List<String> paths = rule.getPaths();
+            for(String path: paths){
+                String key = rule.getServiceId() + "." + path;
+                newPathRuleMap.put(key, rule);
+            }
+        }
+        ruleMap = newRuleMap;
+        pathRuleMap = newPathRuleMap;
+        serviceIdRuleMap = newServiceIdRuleMap;
     }
 
     public Rule getRule(String ruleId) {
@@ -120,5 +152,16 @@ public class DynamicConfigManager {
         return ruleMap;
     }
 
+    /**
+     * 根据path获取rule
+     * @param path
+     * @return
+     */
+    public Rule getRuleByPath(String path){
+        return pathRuleMap.get(path);
+    }
 
+    public List<Rule> getRuleByServiceId(String serviceId){
+        return serviceIdRuleMap.get(serviceId);
+    }
 }

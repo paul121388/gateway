@@ -15,6 +15,8 @@ import org.paul.common.exception.ResponseException;
 import org.paul.core.ConfigLoader;
 import org.paul.core.context.GatewayContext;
 import org.paul.core.context.HttpRequestWrapper;
+import org.paul.core.filter.FilterFactory;
+import org.paul.core.filter.GatewayFilterChainFactory;
 import org.paul.core.helper.AsyncHttpHelper;
 import org.paul.core.helper.RequestHelper;
 import org.paul.core.helper.ResponseHelper;
@@ -35,6 +37,9 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class NettyCoreProcessor implements NettyProcessor {
 
+    //拿到工厂类
+    private FilterFactory filterFactory = GatewayFilterChainFactory.getInstance();
+
     @Override
     public void process(HttpRequestWrapper httpRequestWrapper) {
 
@@ -45,6 +50,10 @@ public class NettyCoreProcessor implements NettyProcessor {
         try {
             // request转换为内部GatewayContext对象
             GatewayContext gatewayContext = RequestHelper.doContext(request, ctx);
+
+            //执行过滤器逻辑
+            filterFactory.buildFilterChain(gatewayContext).doFilter(gatewayContext);
+
             // 路由转发
             route(gatewayContext);
         }// catch已知异常

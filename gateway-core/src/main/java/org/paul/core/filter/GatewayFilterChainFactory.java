@@ -14,7 +14,7 @@ public class GatewayFilterChainFactory implements FilterFactory {
     private static class SingletonInstance {
         private static final GatewayFilterChainFactory INSTANCE = new GatewayFilterChainFactory();
     }
-    private static GatewayFilterChainFactory getInstance(){
+    public static GatewayFilterChainFactory getInstance(){
         return SingletonInstance.INSTANCE;
     }
 

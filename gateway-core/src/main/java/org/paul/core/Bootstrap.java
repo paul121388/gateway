@@ -27,11 +27,6 @@ public class Bootstrap {
         Config config = ConfigLoader.getInstance().load(args);
         System.out.println(config.getPort());
 
-
-        //启动容器
-        Container container = new Container(config);
-        container.start();
-
         //插件初始化
         //配置中心管理器初始化，连接配置中心，监听配置的新增、修改、删除
         ServiceLoader<ConfigCenter> serviceLoader = ServiceLoader.load(ConfigCenter.class);
@@ -40,8 +35,14 @@ public class Bootstrap {
             return new RuntimeException("not found ConfigCenter impl");
         });
         configCenter.init(config.getRegistryAddress(), config.getEnv());
+        //将配置中心的ruleList放到内存中的DynamicConfigManager
         configCenter.subscribeRulesChange(ruleList -> DynamicConfigManager.getInstance()
                 .putAllRule(ruleList));
+
+        //启动容器
+        Container container = new Container(config);
+        container.start();
+
 
         //把网关注册到注册中心
         final RegisterCenter registerCenter = registerAndSubscribe(config);

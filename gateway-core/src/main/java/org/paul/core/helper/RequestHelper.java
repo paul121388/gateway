@@ -3,13 +3,12 @@ package org.paul.core.helper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import org.apache.commons.lang3.StringUtils;
-import org.paul.common.config.HttpServiceInvoker;
-import org.paul.common.config.Rule;
-import org.paul.common.config.ServiceDefinition;
-import org.paul.common.config.ServiceInvoker;
+import org.paul.common.config.*;
 import org.paul.common.constants.BasicConst;
 import org.paul.common.constants.GatewayConst;
 import org.paul.common.constants.GatewayProtocol;
+import org.paul.common.enums.ResponseCode;
+import org.paul.common.exception.ResponseException;
 import org.paul.core.context.GatewayContext;
 import org.paul.core.request.GatewayRequest;
 
@@ -29,7 +28,8 @@ public class RequestHelper {
 
         //	根据请求对象里的uniqueId，获取资源服务信息(也就是服务定义信息)
         ServiceDefinition serviceDefinition = ServiceDefinition.builder()
-                .serviceId("demo")
+                //后台服务的id
+                .serviceId(gateWayRequest.getUniqueId())
                 .enable(true)
                 .version("v1")
                 .patternPath("**")
@@ -43,6 +43,8 @@ public class RequestHelper {
         serviceInvoker.setInvokerPath(gateWayRequest.getPath());
         serviceInvoker.setTimeout(500);
 
+        //根据请求对象返回rule
+        Rule rule = getRule(gateWayRequest);
 
         //	构建我们而定GateWayContext对象
         GatewayContext gatewayContext = new GatewayContext(
@@ -50,7 +52,7 @@ public class RequestHelper {
                 HttpUtil.isKeepAlive(request),
                 ctx,
                 gateWayRequest,
-                new Rule());
+                rule);
 
 
         //后续服务发现做完，这里都要改成动态的
@@ -58,6 +60,8 @@ public class RequestHelper {
 
         return gatewayContext;
     }
+
+
 
     /**
      * 构建Request请求对象
@@ -108,5 +112,24 @@ public class RequestHelper {
         return clientIp;
     }
 
+    /**
+     * 根据请求对象获取rule
+     * @param gateWayRequest
+     * @return
+     */
+    private static Rule getRule(GatewayRequest gateWayRequest) {
+        //从配置中心获取rule的数据，根据DynamicConfigManager中的rule集合获取
+        String key = gateWayRequest.getUniqueId() + "." + gateWayRequest.getPath();
+        Rule ruleByPath = DynamicConfigManager.getInstance().getRuleByPath(key);
 
+        //如果有根据path配置rule，直接返回
+        if(ruleByPath != null){
+            return ruleByPath;
+        }
+
+        //否则，根据请求的服务id和path返回
+        return DynamicConfigManager.getInstance().getRuleByServiceId(gateWayRequest.getUniqueId())
+                .stream().filter(r -> gateWayRequest.getPath().startsWith(r.getPrefix()))
+                .findAny().orElseThrow(() -> new ResponseException(ResponseCode.PATH_NO_MATCHED));
+    }
 }
