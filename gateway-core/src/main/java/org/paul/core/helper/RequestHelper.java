@@ -55,8 +55,8 @@ public class RequestHelper {
                 rule);
 
 
-        //后续服务发现做完，这里都要改成动态的
-        gatewayContext.getRequest().setModifyHost("127.0.0.1:8083");
+        //后续服务发现做完，这里都要改成动态的 -- 已经在负载均衡过滤器中设置
+//        gatewayContext.getRequest().setModifyHost("127.0.0.1:8083");
 
         return gatewayContext;
     }
