@@ -124,8 +124,7 @@ public class NacosRegisterCenter implements RegisterCenter {
             // 拿到服务列表
             List<String> serviceList = namingService.getServicesOfServer(pageNo, pageSize, env).getData();
 
-            // 定义eventListener
-            EventListener eventListener = new NacosRegisterListener();
+
 
             // 服务列表不为空，一致循环
             while (CollectionUtils.isNotEmpty(serviceList)){
@@ -137,7 +136,10 @@ public class NacosRegisterCenter implements RegisterCenter {
                     if(subscribedServices.contains(serviceName)){
                         continue;
                     }
+                    // 定义eventListener
+                    EventListener eventListener = new NacosRegisterListener();
                     // 没有定义，就进行订阅，需要service和nacos包中的eventListener，打印日志
+                    eventListener.onEvent(new NamingEvent(serviceName, null));
                     namingService.subscribe(serviceName, eventListener);
                     log.info("subsribe {} {}", serviceName, env);
                 }

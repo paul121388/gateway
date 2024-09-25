@@ -78,10 +78,10 @@ public class Bootstrap {
         registerCenter.subscribeAllServices(new RegisterCenterListener() {
             @Override
             public void onChange(ServiceDefinition serviceDefinition, Set<ServiceInstance> serviceInstanceSet) {
-                log.info("refresh service and instance:{} {}", serviceInstance.getUniqueId(), JSON.toJSON(serviceInstanceSet));
+                log.info("refresh service and instance:{} {}", serviceDefinition.getUniqueId(), JSON.toJSON(serviceInstanceSet));
                 // 更新服务定义和服务缓存
                 DynamicConfigManager manager = DynamicConfigManager.getInstance();
-                manager.addServiceInstance(serviceInstance.getUniqueId(), serviceInstanceSet);
+                manager.addServiceInstance(serviceDefinition.getUniqueId(), serviceInstanceSet);
                 manager.putServiceDefinition(serviceDefinition.getUniqueId(), serviceDefinition);
             }
         });
