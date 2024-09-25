@@ -180,7 +180,8 @@ public class NacosRegisterCenter implements RegisterCenter {
                     Set<ServiceInstance> set = new HashSet<>();
                     // 循环进行反序列化
                     for(Instance instance: allInstances){
-                        JSON.parseObject(instance.getMetadata().get(GatewayConst.META_DATA_KEY), ServiceInstance.class);
+                        ServiceInstance serviceInstance = JSON.parseObject(instance.getMetadata().get(GatewayConst.META_DATA_KEY), ServiceInstance.class);
+                        set.add(serviceInstance);
                     }
 
                     // 调用监听器

@@ -98,8 +98,8 @@ public class RouterFilter implements Filter {
             ResponseHelper.writeResponse(gatewayContext);
         }
     }
-    @Override
-    public int getOrder() {
-        return Filter.super.getOrder();
-    }
+//    @Override
+//    public int getOrder() {
+//        return Filter.super.getOrder();
+//    }
 }

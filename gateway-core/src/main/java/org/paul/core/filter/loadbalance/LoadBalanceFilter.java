@@ -42,7 +42,7 @@ public class LoadBalanceFilter implements Filter {
 
         //判断GatewayRequest和ServiceInstance都不为空，才去构建发向下游服务的request
         if(serviceInstance != null && request != null){
-            String modifyHost = serviceInstance.getIp() + ": "+ serviceInstance.getPort();
+            String modifyHost = serviceInstance.getIp() + ":"+ serviceInstance.getPort();
             request.setModifyHost(modifyHost);
         }else{
             log.warn("No instance available for: {}", serviceId);
