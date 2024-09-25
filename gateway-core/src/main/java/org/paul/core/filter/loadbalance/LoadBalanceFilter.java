@@ -36,6 +36,7 @@ public class LoadBalanceFilter implements Filter {
 
         //根据上面的rule获取对应的服务器，设置GatewayContext的modifyHost，用于构建发向下游的请求
         ServiceInstance serviceInstance = gatewayLoadBalanceRule.choose(serviceId);
+        System.out.println("当前IP为：" + serviceInstance.getIp() + ",port为：" + serviceInstance.getPort());
 
         //获取发向网关的请求
         GatewayRequest request = ctx.getRequest();
@@ -87,10 +88,10 @@ public class LoadBalanceFilter implements Filter {
                     }
                     switch (strategy){
                         case LOAD_BALANCE_STRATEGY_RANDOM:
-                            gatewayLoadBalanceRule = new RandomLoadBalanceRule(ctx.getUniqueId());
+                            gatewayLoadBalanceRule = new RandomLoadBalanceRule(configRule.getServiceId());
                             break;
                         case LOAD_BALANCE_STRATEGY_ROUND_ROBIN:
-                            gatewayLoadBalanceRule = new RoundRobinLoadBalanceRule(new AtomicInteger(1), ctx.getUniqueId());
+                            gatewayLoadBalanceRule = RoundRobinLoadBalanceRule.getInstance(configRule.getServiceId());
                             break;
                         default:
                             break;
