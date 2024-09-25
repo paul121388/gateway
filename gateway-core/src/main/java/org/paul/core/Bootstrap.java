@@ -82,6 +82,7 @@ public class Bootstrap {
                 // 更新服务定义和服务缓存
                 DynamicConfigManager manager = DynamicConfigManager.getInstance();
                 manager.addServiceInstance(serviceInstance.getUniqueId(), serviceInstanceSet);
+                manager.putServiceDefinition(serviceDefinition.getUniqueId(), serviceDefinition);
             }
         });
         return registerCenter;
