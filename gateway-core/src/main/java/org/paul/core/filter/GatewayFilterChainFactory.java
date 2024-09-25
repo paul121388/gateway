@@ -3,6 +3,7 @@ package org.paul.core.filter;
 import org.apache.commons.lang3.StringUtils;
 import org.paul.common.config.Rule;
 import org.paul.core.context.GatewayContext;
+import org.paul.core.filter.router.RouterFilter;
 
 import java.util.*;
 
@@ -75,7 +76,8 @@ public class GatewayFilterChainFactory implements FilterFactory {
                 }
             }
         }
-        //todo 添加路由过滤器，最后一步
+        //添加路由过滤器，最后一步
+        filters.add(new RouterFilter());
 
         //根据order对暂存的过滤器根据order进行排序
         filters.sort(Comparator.comparingInt(Filter::getOrder));

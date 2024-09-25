@@ -23,9 +23,9 @@ import static org.paul.common.constants.FilterConst.*;
  * 负载均衡过滤器
  */
 @Slf4j
-@FilterAspect(id = Load_BALANCE_FILTER_ID,
-        name = Load_BALANCE_FILTER_NAME,
-        order = Load_BALANCE_FILTER_ORDER)
+@FilterAspect(id = LOAD_BALANCE_FILTER_ID,
+        name = LOAD_BALANCE_FILTER_NAME,
+        order = LOAD_BALANCE_FILTER_ORDER)
 public class LoadBalanceFilter implements Filter {
     @Override
     public void doFilter(GatewayContext ctx) throws Exception {
@@ -73,7 +73,7 @@ public class LoadBalanceFilter implements Filter {
                 }
 
                 //判断过滤器是不是负载均衡过滤器
-                if(filterConfig.getId().equals(Load_BALANCE_FILTER_ID)){
+                if(filterConfig.getId().equals(LOAD_BALANCE_FILTER_ID)){
                     String config = filterConfig.getConfig();
 
                     //负载均衡策略：随机/轮询，默认为随机

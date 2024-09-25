@@ -1,8 +1,13 @@
 package org.paul.core.filter;
 
+import java.lang.annotation.*;
+
 /**
  * 过滤器注解类
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 public @interface FilterAspect {
     /**
      * 过滤器id
