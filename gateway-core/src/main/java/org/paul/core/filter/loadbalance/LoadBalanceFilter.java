@@ -88,7 +88,7 @@ public class LoadBalanceFilter implements Filter {
                     }
                     switch (strategy){
                         case LOAD_BALANCE_STRATEGY_RANDOM:
-                            gatewayLoadBalanceRule = new RandomLoadBalanceRule(configRule.getServiceId());
+                            gatewayLoadBalanceRule = RandomLoadBalanceRule.getInstance(configRule.getServiceId());
                             break;
                         case LOAD_BALANCE_STRATEGY_ROUND_ROBIN:
                             gatewayLoadBalanceRule = RoundRobinLoadBalanceRule.getInstance(configRule.getServiceId());
