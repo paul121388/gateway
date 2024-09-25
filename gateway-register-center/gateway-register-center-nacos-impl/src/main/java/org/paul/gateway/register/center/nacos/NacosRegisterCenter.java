@@ -109,7 +109,7 @@ public class NacosRegisterCenter implements RegisterCenter {
         // 如果新加入的服务，我们不知道，为了将这些任务加入，因此需要定时任务，循环执行上述订阅服务的方法
         ScheduledExecutorService scheduledThreadPool = Executors
                 .newScheduledThreadPool(1, new NameThreadFactory("doSubcribeAllService"));
-        scheduledThreadPool.scheduleWithFixedDelay(()->doSubcribeAllService(), 1, 1, TimeUnit.SECONDS);
+        scheduledThreadPool.scheduleWithFixedDelay(()->doSubcribeAllService(), 10, 10, TimeUnit.SECONDS);
     }
 
     private void doSubcribeAllService(){

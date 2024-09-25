@@ -79,9 +79,11 @@ public class RouterFilter implements Filter {
                 if(throwable instanceof TimeoutException){
                     log.warn("complete time out {}", url);
                     gatewayContext.setThrowable(new ResponseException(ResponseCode.REQUEST_TIMEOUT));
+                    gatewayContext.setResponse(GatewayResponse.buildGatewayResponse(ResponseCode.REQUEST_TIMEOUT));
                 }else{
                     //如果时其他异常，记录必要信息：唯一id，url，响应码
                     gatewayContext.setThrowable(new ConnectException(throwable, gatewayContext.getUniqueId(), url, ResponseCode.HTTP_RESPONSE_ERROR));
+                    gatewayContext.setResponse(GatewayResponse.buildGatewayResponse(ResponseCode.HTTP_RESPONSE_ERROR));
                 }
             }else{
                 //正常的话，往上下文写入response
@@ -89,6 +91,7 @@ public class RouterFilter implements Filter {
             }
         } catch (Throwable t) {
             gatewayContext.setThrowable(new ResponseException(ResponseCode.INTERNAL_ERROR));
+            gatewayContext.setResponse(GatewayResponse.buildGatewayResponse(ResponseCode.INTERNAL_ERROR));
             log.error("complete error", t);
         }finally {
             gatewayContext.writtened();

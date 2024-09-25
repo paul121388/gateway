@@ -6,6 +6,7 @@ import org.paul.core.context.GatewayContext;
 import org.paul.core.filter.router.RouterFilter;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 过滤器工厂实现类
@@ -19,7 +20,7 @@ public class GatewayFilterChainFactory implements FilterFactory {
         return SingletonInstance.INSTANCE;
     }
 
-    public Map<String, Filter> processorFilterIdMap = new LinkedHashMap<>();
+    public Map<String, Filter> processorFilterIdMap = new ConcurrentHashMap<>();
 
     public GatewayFilterChainFactory(){
         //加载所有的filter类，遍历filter类，放到当前工厂中的map

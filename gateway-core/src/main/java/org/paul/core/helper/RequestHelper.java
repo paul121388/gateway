@@ -27,15 +27,8 @@ public class RequestHelper {
         GatewayRequest gateWayRequest = doRequest(request, ctx);
 
         //	根据请求对象里的uniqueId，获取资源服务信息(也就是服务定义信息)
-        ServiceDefinition serviceDefinition = ServiceDefinition.builder()
-                //后台服务的id
-                .serviceId(gateWayRequest.getUniqueId())
-                .enable(true)
-                .version("v1")
-                .patternPath("**")
-                .envType("dev")
-                .protocol(GatewayProtocol.HTTP)
-                .build();
+        //服务定义的获取：直接从缓存中获取
+        ServiceDefinition serviceDefinition = DynamicConfigManager.getInstance().getServiceDefinition(gateWayRequest.getUniqueId());
 
 
         //	根据请求对象获取服务定义对应的方法调用，然后获取对应的规则
@@ -60,7 +53,6 @@ public class RequestHelper {
 
         return gatewayContext;
     }
-
 
 
     /**
@@ -114,6 +106,7 @@ public class RequestHelper {
 
     /**
      * 根据请求对象获取rule
+     *
      * @param gateWayRequest
      * @return
      */
@@ -123,7 +116,7 @@ public class RequestHelper {
         Rule ruleByPath = DynamicConfigManager.getInstance().getRuleByPath(key);
 
         //如果有根据path配置rule，直接返回
-        if(ruleByPath != null){
+        if (ruleByPath != null) {
             return ruleByPath;
         }
 
