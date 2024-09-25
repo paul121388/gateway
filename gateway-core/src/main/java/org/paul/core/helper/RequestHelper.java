@@ -37,7 +37,7 @@ public class RequestHelper {
         serviceInvoker.setTimeout(500);
 
         //根据请求对象返回rule
-        Rule rule = getRule(gateWayRequest);
+        Rule rule = getRule(gateWayRequest, serviceDefinition.getServiceId());
 
         //	构建我们而定GateWayContext对象
         GatewayContext gatewayContext = new GatewayContext(
@@ -110,9 +110,9 @@ public class RequestHelper {
      * @param gateWayRequest
      * @return
      */
-    private static Rule getRule(GatewayRequest gateWayRequest) {
+    private static Rule getRule(GatewayRequest gateWayRequest, String serverId) {
         //从配置中心获取rule的数据，根据DynamicConfigManager中的rule集合获取
-        String key = gateWayRequest.getUniqueId() + "." + gateWayRequest.getPath();
+        String key = serverId + "." + gateWayRequest.getPath();
         Rule ruleByPath = DynamicConfigManager.getInstance().getRuleByPath(key);
 
         //如果有根据path配置rule，直接返回
@@ -121,7 +121,7 @@ public class RequestHelper {
         }
 
         //否则，根据请求的服务id和path返回
-        return DynamicConfigManager.getInstance().getRuleByServiceId(gateWayRequest.getUniqueId())
+        return DynamicConfigManager.getInstance().getRuleByServiceId(serverId)
                 .stream().filter(r -> gateWayRequest.getPath().startsWith(r.getPrefix()))
                 .findAny().orElseThrow(() -> new ResponseException(ResponseCode.PATH_NO_MATCHED));
     }
