@@ -54,6 +54,16 @@ public class Rule implements Comparable<Rule>, Serializable {
      */
     private Set<FilterConfig> filterConfigs = new HashSet<>();
 
+    private RetryConfig retryConfig = new RetryConfig();
+
+    public RetryConfig getRetryConfig() {
+        return retryConfig;
+    }
+
+    public void setRetryConfig(RetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
+    }
+
     public Rule() {
         super();
     }
@@ -132,6 +142,22 @@ public class Rule implements Comparable<Rule>, Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * 重试的配置，一般在路由转发中进行重试
+     */
+    public static class RetryConfig{
+        //重试次数
+        private int times;
+
+        public int getTimes() {
+            return times;
+        }
+
+        public void setTimes(int times) {
+            this.times = times;
+        }
     }
 
     /**
