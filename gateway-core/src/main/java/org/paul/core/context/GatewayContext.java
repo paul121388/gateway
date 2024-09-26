@@ -21,10 +21,14 @@ public class GatewayContext extends BaseContext {
     // 规则
     public Rule rule;
 
-    public GatewayContext(String protocol, boolean keepAlive, ChannelHandlerContext nettyCtx, GatewayRequest request, Rule rule) {
+    //当前重试次数
+    private int currentRetryTimes;
+
+    public GatewayContext(String protocol, boolean keepAlive, ChannelHandlerContext nettyCtx, GatewayRequest request, Rule rule, int currentRetryTimes) {
         super(protocol, keepAlive, nettyCtx);
         this.request = request;
         this.rule = rule;
+        this.currentRetryTimes = currentRetryTimes;
     }
 
     // 建造者类
@@ -76,7 +80,7 @@ public class GatewayContext extends BaseContext {
             AssertUtil.notNull(nettyCtx, "nettyCtx 不能为空");
             AssertUtil.notNull(rule, "rule 不能为空");
             // 构建GatewayContext对象
-            return new GatewayContext(protocol, keepAlive, nettyCtx, request, rule);
+            return new GatewayContext(protocol, keepAlive, nettyCtx, request, rule, 0);
         }
     }
 
@@ -99,21 +103,21 @@ public class GatewayContext extends BaseContext {
     }
 
     // 获取服务唯一Id，针对一个请求，服务唯一Id相同
-    public String getUniqueId(){
+    public String getUniqueId() {
         return request.getUniqueId();
     }
 
     // 重写父类，释放资源
-    public void releaseRequest(){
+    public void releaseRequest() {
         // 判断是否释放，使用CAS
-        if(requestReleased.compareAndSet(false, true)){
+        if (requestReleased.compareAndSet(false, true)) {
             // 释放原始请求对象，使用netty自带的工具类
             ReferenceCountUtil.release(request.getFullHttpRequest());
         }
     }
 
     // 获取原始请求对象
-    public GatewayRequest getOriginRequest(){
+    public GatewayRequest getOriginRequest() {
         return request;
     }
 
@@ -142,5 +146,13 @@ public class GatewayContext extends BaseContext {
 
     public void setRule(Rule rule) {
         this.rule = rule;
+    }
+
+    public int getCurrentRetryTimes() {
+        return currentRetryTimes;
+    }
+
+    public void setCurrentRetryTimes(int currentRetryTimes) {
+        this.currentRetryTimes = currentRetryTimes;
     }
 }
