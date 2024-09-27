@@ -38,7 +38,7 @@ public class GatewayFilterChain {
      * @param ctx
      * @return
      */
-    public GatewayContext doFilter(GatewayContext ctx) {
+    public GatewayContext doFilter(GatewayContext ctx) throws Exception{
         // 过滤器链条为空，不执行过滤动作，直接返回
         if (filters.isEmpty()) {
             return ctx;
@@ -50,6 +50,7 @@ public class GatewayFilterChain {
             }
         } catch (Exception e) {
             log.error("执行过滤器发生异常，异常信息：{}", e.getMessage());
+            throw e;
         }
         return ctx;
     }

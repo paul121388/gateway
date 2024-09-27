@@ -36,7 +36,7 @@ public class GuavaCountLimiter {
     public static ConcurrentHashMap<String, GuavaCountLimiter> resourceRateLimiterMap = new ConcurrentHashMap<>();
 
     //对外暴露获取当前实例的方法，参数为serviceId和配置对象
-    public static GuavaCountLimiter getInstance(String serviceId, Rule.FlowCtlConfig flowCtlConfig) {
+    public static GuavaCountLimiter getInstance(String serviceId, Rule.FlowCtlConfig flowCtlConfig, int maxPermits) {
         //如果配置为空或者配置中任意参数为空，直接返回null
         if (StringUtils.isEmpty(serviceId)
                 || flowCtlConfig == null
@@ -52,7 +52,7 @@ public class GuavaCountLimiter {
         GuavaCountLimiter guavaCountLimiter = resourceRateLimiterMap.get(key);
         if(guavaCountLimiter == null){
             //todo 应该改为从配置中心中获取
-            guavaCountLimiter = new GuavaCountLimiter(50);
+            guavaCountLimiter = new GuavaCountLimiter(maxPermits);
             resourceRateLimiterMap.putIfAbsent(key, guavaCountLimiter);
         }
         return guavaCountLimiter;
