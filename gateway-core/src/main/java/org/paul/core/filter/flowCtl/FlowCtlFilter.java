@@ -40,7 +40,7 @@ public class FlowCtlFilter implements Filter {
                 //如果限流类型是根据path限流，且上下文ctx中的path和配置中的path相同，需要执行限流
                 if(flowCtlConfig.getType().equalsIgnoreCase(FLOW_CTL_TYPE_PATH) && path.equals(flowCtlConfig.getValue())){
                     //获取对应的流控规则
-                    flowCtlRule = new FlowCtlByPathRule(rule.getServiceId(), path);
+                    flowCtlRule = FlowCtlByPathRule.getInstance(rule.getServiceId(), path);
                 } //如果限流类型是根据服务限流
                 else if (flowCtlConfig.getType().equalsIgnoreCase(FLOW_CTL_TYPE_SERVICE)){
                     //todo 获取对应的流控规则
