@@ -54,6 +54,11 @@ public class Rule implements Comparable<Rule>, Serializable {
      */
     private Set<FilterConfig> filterConfigs = new HashSet<>();
 
+    /**
+     * 限流过滤器配置集合
+     */
+    private Set<FlowCtlConfig> flowCtlConfigs = new HashSet<>();
+
     private RetryConfig retryConfig = new RetryConfig();
 
     public RetryConfig getRetryConfig() {
@@ -119,6 +124,72 @@ public class Rule implements Comparable<Rule>, Serializable {
         public int hashCode() {
             return Objects.hash(id);
         }
+    }
+
+    /**
+     * 限流规则配置，一般根据ip/路径/后端服务
+     */
+    public static class FlowCtlConfig{
+        /**
+         * 限流类型，根据ip/路径/后端服务
+         */
+        private String type;
+
+        /**
+         * 限流对象，比如是ip，路径，或后端服务id
+         */
+        private String value;
+
+        /**
+         * 限流模式，分布式/单机限流
+         */
+        private String model;
+
+        /**
+         * 限流规则，配置在nacos配置中心，通常是两个参数：duration内permits流量，JSON格式
+         */
+        private String config;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public String getConfig() {
+            return config;
+        }
+
+        public void setConfig(String config) {
+            this.config = config;
+        }
+    }
+
+    //对外暴露流控过滤器配置的获取和修改
+    public Set<FlowCtlConfig> getFlowCtlConfigs() {
+        return flowCtlConfigs;
+    }
+
+    public void setFlowCtlConfigs(Set<FlowCtlConfig> flowCtlConfigs) {
+        this.flowCtlConfigs = flowCtlConfigs;
     }
 
     /**
