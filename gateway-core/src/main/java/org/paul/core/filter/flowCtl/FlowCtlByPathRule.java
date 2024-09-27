@@ -77,7 +77,13 @@ public class FlowCtlByPathRule implements IGatewayFlowCtlRule{
             //todo redis中的限流，根据限流结果设置flag
         }else{
             //guava中的rateLimiter时，如果不能获取对应的对象，直接抛出异常
+            GuavaCountLimiter guavaCountLimiter = GuavaCountLimiter.getInstance(serviceId, flowCtlConfig);
+            if(guavaCountLimiter == null){
+                throw new RuntimeException("获取单机限流工具类失败");
+            }
             //尝试获取对应数量的令牌，判断是否被限流，设置flag
+            double count = Math.ceil(permits/duration);
+            guavaCountLimiter.acquire((int)count);
         }
 
         //使用flag表示是否被流控了，流控了就直接抛出异常
