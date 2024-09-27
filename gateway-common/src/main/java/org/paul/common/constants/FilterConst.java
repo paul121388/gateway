@@ -15,4 +15,17 @@ public interface FilterConst {
     String ROUTER_FILTER_ID = "router_filter";
     String ROUTER_FILTER_NAME = "router_filter";
     int ROUTER_BALANCE_FILTER_ORDER = Integer.MAX_VALUE;
+
+    String FLOW_CTL_FILTER_ID = "flow_ctl_filter";
+    String FLOW_CTL_FILTER_NAME = "flow_ctl_filter";
+    int FLOW_CTL_FILTER_ORDER = 50;
+
+    String FLOW_CTL_TYPE_PATH = "path";
+    String FLOW_CTL_TYPE_SERVICE = "service";
+
+    String FLOW_CTL_LIMIT_DURATION = "duration";
+    String FLOW_CTL_LIMIT_PERMITS = "permits";
+
+    String FLOW_CTL_MODEL_DISRTIBUTED = "distributed";
+    String FLOW_CTL_MODEL_SINGLETON = "Singleton";
 }
