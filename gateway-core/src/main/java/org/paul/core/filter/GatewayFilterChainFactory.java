@@ -54,6 +54,10 @@ public class GatewayFilterChainFactory implements FilterFactory {
 
         filters.add(getFilterInfo(FilterConst.GRAY_FILTER_ID));
 
+        //默认添加前后两个监控过滤器
+        filters.add(getFilterInfo(FilterConst.MONITOR_FILTER_ID));
+        filters.add(getFilterInfo(FilterConst.MONITOR_END_FILTER_ID));
+
         //GatewayContext中的Rule定义了规则
         //Rule中有了FilterConfig的集合
         Rule rule = ctx.getRule();

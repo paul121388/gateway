@@ -3,3 +3,5 @@ org.paul.core.filter.router.RouterFilter
 org.paul.core.filter.flowCtl.FlowCtlFilter
 org.paul.core.filter.user.UserAuthFilter
 org.paul.core.filter.gray.GrayFilter
+org.paul.core.filter.monitor.MonitorFilter
+org.paul.core.filter.monitor.MonitorEndFilter
