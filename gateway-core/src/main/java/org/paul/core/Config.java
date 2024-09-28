@@ -9,7 +9,7 @@ public class Config {
     private int port = 9888;
 
     //暴露给普罗米修斯注册表的接口
-    private int prometheusPort = 18001;
+    private int prometheusPort = 18100;
 
     // 主流服务都是微服务架构，需要进行服务发现，需要微服务名称/服务唯一id
     private String applicationName = "api-gateway";

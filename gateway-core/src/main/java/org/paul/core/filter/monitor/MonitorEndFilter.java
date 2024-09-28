@@ -1,4 +1,6 @@
 package org.paul.core.filter.monitor;
+import com.alibaba.nacos.client.naming.utils.RandomUtils;
+
 
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -13,6 +15,8 @@ import org.paul.core.filter.FilterAspect;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.paul.common.constants.FilterConst.*;
 
@@ -40,14 +44,29 @@ public class MonitorEndFilter implements Filter {
                 try(OutputStream outputStream = exchange.getResponseBody()){
                     outputStream.write(scrape.getBytes());
                 }
-
-                new Thread(server::start).start();
             });
+
+            new Thread(server::start).start();
         }catch (IOException e){
             log.error("prometheus http server start error", e);
             throw new RuntimeException(e);
         }
         log.info("prometheus http server start successful, port:{}", ConfigLoader.getConfig().getPrometheusPort());
+
+        //mock
+        Executors.newScheduledThreadPool(1000).scheduleAtFixedRate(() -> {
+            Timer.Sample sample = Timer.start();
+            try {
+                Thread.sleep(RandomUtils.nextInt(100));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            Timer timer = prometheusMeterRegistry.timer("gateway_request",
+                    "uniqueId", "backend-http-server:1.0.0",
+                    "protocol", "http",
+                    "path", "/http-server/ping" + RandomUtils.nextInt(10));
+            sample.stop(timer);
+        },200, 100, TimeUnit.MILLISECONDS);
 
     }
 
