@@ -15,6 +15,8 @@ import org.paul.core.filter.FilterAspect;
 import org.paul.core.helper.AsyncHttpHelper;
 import org.paul.core.helper.ResponseHelper;
 import org.paul.core.response.GatewayResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -33,6 +35,7 @@ import static org.paul.common.constants.FilterConst.*;
 )
 @Slf4j
 public class RouterFilter implements Filter {
+    private static Logger accessLog = LoggerFactory.getLogger("accessLog");
 
     /**
      * 执行过滤，处理异步请求结果
@@ -207,6 +210,15 @@ public class RouterFilter implements Filter {
         } finally {
             gatewayContext.writtened();
             ResponseHelper.writeResponse(gatewayContext);
+
+            accessLog.info("{} {} {} {} {} {} {}",
+                    System.currentTimeMillis() - gatewayContext.getRequest().getBeginTime(),
+                    gatewayContext.getRequest().getClientIp(),
+                    gatewayContext.getRequest().getUniqueId(),
+                    gatewayContext.getRequest().getMethod(),
+                    gatewayContext.getRequest().getPath(),
+                    gatewayContext.getResponse().getHttpResponseStatus().code(),
+                    gatewayContext.getResponse().getFutureResponse().getResponseBodyAsBytes().length);
         }
     }
 
