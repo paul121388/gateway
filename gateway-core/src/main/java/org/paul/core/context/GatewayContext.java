@@ -1,5 +1,6 @@
 package org.paul.core.context;
 
+import io.micrometer.core.instrument.Timer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
 import lombok.Getter;
@@ -30,6 +31,11 @@ public class GatewayContext extends BaseContext {
     @Getter
     @Setter
     private boolean gray;
+
+    //普罗米修斯工具包中提供了时间采集指标的相关类
+    @Getter
+    @Setter
+    private Timer.Sample timeSample;
 
     public GatewayContext(String protocol, boolean keepAlive, ChannelHandlerContext nettyCtx, GatewayRequest request, Rule rule, int currentRetryTimes) {
         super(protocol, keepAlive, nettyCtx);

@@ -1,5 +1,6 @@
 package org.paul.core.filter.monitor;
 
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.paul.core.context.GatewayContext;
 import org.paul.core.filter.Filter;
@@ -15,6 +16,7 @@ import static org.paul.common.constants.FilterConst.*;
 public class MonitorFilter implements Filter {
     @Override
     public void doFilter(GatewayContext ctx) throws Exception {
-
+        //开始采集
+        ctx.setTimeSample(Timer.start());
     }
 }
