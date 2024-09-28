@@ -8,6 +8,7 @@ public enum ResponseCode {
 
     SUCCESS(HttpResponseStatus.OK, 0, "成功"),
     INTERNAL_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR, 1000, "网关内部错误"),
+    UNAUTHORIZED(HttpResponseStatus.UNAUTHORIZED, 401, "用户未登录"),
     SERVICE_UNAVAILABLE(HttpResponseStatus.SERVICE_UNAVAILABLE, 2000, "服务暂时不可用,请稍后再试"),
 
     REQUEST_PARSE_ERROR(HttpResponseStatus.BAD_REQUEST, 10000, "请求解析错误, header中必须存在uniqueId参数"),
