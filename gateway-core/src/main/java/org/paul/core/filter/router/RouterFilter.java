@@ -1,5 +1,6 @@
 package org.paul.core.filter.router;
 
+import com.netflix.hystrix.*;
 import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.Response;
@@ -52,15 +53,14 @@ public class RouterFilter implements Filter {
     }
 
 
-
-
     /**
      * 定义route方法，没有熔断配置时，就是原来的路由转发的代码
      * 在这段代码中还需要再次判断是否有熔断配置，没有才进行重试
+     *
      * @param gatewayContext
      * @param hystrixConfig
      */
-    private void route(GatewayContext gatewayContext, Optional<Rule.HystrixConfig> hystrixConfig) {
+    private CompletableFuture<Response> route(GatewayContext gatewayContext, Optional<Rule.HystrixConfig> hystrixConfig) {
         //获取request对象（真正发送给下游服务时使用）
         Request request = gatewayContext.getRequest().build();
         //调用自定义AsyncHttpHelper，首先获取实例，然后执行request，返回Future对象
@@ -85,10 +85,12 @@ public class RouterFilter implements Filter {
                 complete(request, response, throwable, gatewayContext, hystrixConfig);
             });
         }
+        return future;
     }
 
     /**
      * 获取熔断配置
+     *
      * @param gatewayContext
      * @return
      */
@@ -102,19 +104,52 @@ public class RouterFilter implements Filter {
 
 
     /**
-     * todo 有熔断配置时的路由转发
+     * 有熔断配置时的路由转发
+     *
      * @param gatewayContext
      * @param hystrixConfig
      */
     private void routeWithHystrix(GatewayContext gatewayContext, Optional<Rule.HystrixConfig> hystrixConfig) {
+        //使用原生的HystrixCommand，定义一组的key，第一个key时上下文中的唯一id；定义CommandKey，key为上下文的请求中的path
+        //设置Hystrix命令组的键。所有的Hystrix命令都会属于一个命令组，这个组通常是根据功能或服务来划分的。命令组用于统计、监控和配置的目的。
+        HystrixCommand.Setter setter = HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey
+                        .Factory
+                        .asKey(gatewayContext.getUniqueId()))
+                //设置Hystrix命令的键。每个Hystrix命令都有一个唯一的键，这个键用于区分不同的命令实例，特别是在监控和日志记录中。
+                .andCommandKey(HystrixCommandKey.Factory
+                        .asKey(gatewayContext.getRequest().getPath()))
+                //设置线程池大小，从配置中获取
+                .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter()
+                        .withCoreSize(hystrixConfig.get().getThreadCoreSize()))
+                //配置CommandProperties
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                        //定义隔离策略：线程隔离的方式，这意味着每个Hystrix命令将在单独的线程中执行，以隔离不同的依赖调用，防止一个慢调用或失败的依赖影响到其他依赖。
+                        .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.THREAD)
+                        //设置超时时间，超过阈值，Hystrix将中断命令的执行
+                        .withExecutionTimeoutInMilliseconds(hystrixConfig.get().getTimeoutInMilliseconds())
+                        //发生异常时，Hystrix尝试执行中断
+                        .withExecutionIsolationThreadInterruptOnTimeout(true)
+                        //开启超时时间配置，超时直接报错
+                        .withExecutionTimeoutEnabled(true));
+
+        //new 原生的HystrixCommand
+        new HystrixCommand<Object>(setter) {
+            //执行原来的route
+            @Override
+            protected Object run() throws Exception {
+                route(gatewayContext, hystrixConfig).get();
+                return null;
+            }
+
+            //定义fallback，设置上下文中的response和上下文的状态
+            @Override
+            protected Object getFallback() {
+                gatewayContext.setResponse(hystrixConfig);
+                gatewayContext.writtened();
+                return null;
+            }
+        }.execute();
     }
-    //定义routeWithHystrix方法
-    //使用原生的HystrixCommand，定义一组的key，第一个key时上下文中的唯一id；定义CommandKey，key为上下文的请求中的path
-    //设置线程池大小，从配置中获取
-    //配置CommandProperties，定义隔离策略：线程隔离的方式；设置超时时间，从配置中获取；发生异常时，执行打断；开启超时时间配置
-    //new 原生的HystrixCommand
-    //执行原来的route
-    //定义fallback的获取，设置上下文中的response和上下文的状态；设置完成后执行
 
 
     /**
@@ -140,7 +175,9 @@ public class RouterFilter implements Filter {
 
         //重试应该在路由转发后，下游服务器返回失败后执行
         //并且熔断配置不存在时，才进行重试
-        if ((throwable instanceof TimeoutException || throwable instanceof IOException) && currentRetryTimes <= configRetryTimes && !hystrixConfig.isPresent()) {
+        if ((throwable instanceof TimeoutException || throwable instanceof IOException)
+                && currentRetryTimes <= configRetryTimes
+                && !hystrixConfig.isPresent()) {
             doRetry(gatewayContext, currentRetryTimes);
             return;
         }
