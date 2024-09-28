@@ -59,7 +59,15 @@ public class Rule implements Comparable<Rule>, Serializable {
      */
     private Set<FlowCtlConfig> flowCtlConfigs = new HashSet<>();
 
+    /**
+     * 重试配置集合
+     */
     private RetryConfig retryConfig = new RetryConfig();
+
+    /**
+     * 熔断配置集合
+     */
+    private Set<HystrixConfig> hystrixConfigs = new HashSet<>();
 
     public RetryConfig getRetryConfig() {
         return retryConfig;
@@ -183,6 +191,16 @@ public class Rule implements Comparable<Rule>, Serializable {
         }
     }
 
+    /**
+     * 熔断配置
+     */
+    @Data
+    public static class HystrixConfig{
+        private String path;
+        private int timeoutInMilliseconds;
+        private int threadCoreSize;
+        private String fallbackResponse;
+    }
 
 
     //对外暴露流控过滤器配置的获取和修改
