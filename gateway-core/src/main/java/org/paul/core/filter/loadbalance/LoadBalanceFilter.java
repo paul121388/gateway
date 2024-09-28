@@ -35,7 +35,7 @@ public class LoadBalanceFilter implements Filter {
 
 
         //根据上面的rule获取对应的服务器，设置GatewayContext的modifyHost，用于构建发向下游的请求
-        ServiceInstance serviceInstance = gatewayLoadBalanceRule.choose(serviceId);
+        ServiceInstance serviceInstance = gatewayLoadBalanceRule.choose(serviceId, ctx.isGray());
         System.out.println("当前IP为：" + serviceInstance.getIp() + ",port为：" + serviceInstance.getPort());
 
         //获取发向网关的请求

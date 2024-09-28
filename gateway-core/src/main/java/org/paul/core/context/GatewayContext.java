@@ -2,6 +2,8 @@ package org.paul.core.context;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.ReferenceCountUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.paul.common.utils.AssertUtil;
 import org.paul.core.response.GatewayResponse;
 import org.paul.core.request.GatewayRequest;
@@ -23,6 +25,11 @@ public class GatewayContext extends BaseContext {
 
     //当前重试次数
     private int currentRetryTimes;
+
+    //当前是否为灰度请求
+    @Getter
+    @Setter
+    private boolean gray;
 
     public GatewayContext(String protocol, boolean keepAlive, ChannelHandlerContext nettyCtx, GatewayRequest request, Rule rule, int currentRetryTimes) {
         super(protocol, keepAlive, nettyCtx);

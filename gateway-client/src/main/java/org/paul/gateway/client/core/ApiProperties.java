@@ -14,4 +14,7 @@ public class ApiProperties {
     private String registerAddress;
 
     private String env = "dev";
+
+    //标识灰度服务
+    private boolean gray;
 }

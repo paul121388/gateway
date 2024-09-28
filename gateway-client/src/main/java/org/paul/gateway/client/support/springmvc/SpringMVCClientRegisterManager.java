@@ -116,6 +116,11 @@ public class SpringMVCClientRegisterManager extends AbstractClientRegisterManage
                 serviceInstance.setVersion(version);
                 serviceInstance.setWeight(GatewayConst.DEFAULT_WEIGHT);
 
+                //如果是灰度服务，进行标识
+                if(getApiProperties().isGray()){
+                    serviceInstance.setGray(true);
+                }
+
                 // 下游服务注册到服务中心
                 register(serviceDefinition, serviceInstance);
             }

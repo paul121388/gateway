@@ -2,6 +2,7 @@ package org.paul.core.filter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.paul.common.config.Rule;
+import org.paul.common.constants.FilterConst;
 import org.paul.core.context.GatewayContext;
 import org.paul.core.filter.router.RouterFilter;
 
@@ -50,6 +51,8 @@ public class GatewayFilterChainFactory implements FilterFactory {
     public GatewayFilterChain buildFilterChain(GatewayContext ctx) throws Exception {
         GatewayFilterChain gatewayFilterChain = new GatewayFilterChain();
         List<Filter> filters = new ArrayList<>();
+
+        filters.add(getFilterInfo(FilterConst.GRAY_FILTER_ID));
 
         //GatewayContext中的Rule定义了规则
         //Rule中有了FilterConfig的集合

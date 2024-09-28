@@ -2,7 +2,6 @@ package org.paul.core.filter.loadbalance;
 
 import lombok.extern.slf4j.Slf4j;
 import org.paul.common.config.DynamicConfigManager;
-import org.paul.common.config.Rule;
 import org.paul.common.config.ServiceInstance;
 import org.paul.common.enums.ResponseCode;
 import org.paul.common.exception.NotFoundException;
@@ -37,13 +36,13 @@ public class RandomLoadBalanceRule implements IGatewayLoadBalanceRule {
     @Override
     public ServiceInstance choose(GatewayContext ctx) {
         String serviceId = ctx.getUniqueId();
-        return choose(serviceId);
+        return choose(serviceId, ctx.isGray());
     }
 
     @Override
-    public ServiceInstance choose(String serviceId) {
+    public ServiceInstance choose(String serviceId, boolean gray) {
         //可能存在延迟加载，因为是每秒去轮询获取注册中的实例，所以这里再次加载
-        serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId);
+        serviceInstanceSet = DynamicConfigManager.getInstance().getServiceInstanceByUniqueId(serviceId, gray);
 
         if (serviceInstanceSet.isEmpty()) {
             //注册中心真的没有对应的service实例

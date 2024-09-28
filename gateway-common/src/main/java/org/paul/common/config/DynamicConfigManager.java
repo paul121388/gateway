@@ -1,5 +1,6 @@
 package org.paul.common.config;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
@@ -12,13 +13,13 @@ import java.util.stream.Collectors;
 public class DynamicConfigManager {
 
     //	服务的定义集合：uniqueId代表服务的唯一标识
-    private ConcurrentHashMap<String /* uniqueId */ , ServiceDefinition>  serviceDefinitionMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String /* uniqueId */ , ServiceDefinition> serviceDefinitionMap = new ConcurrentHashMap<>();
 
     //	服务的实例集合：uniqueId与一对服务实例对应
-    private ConcurrentHashMap<String /* uniqueId */ , Set<ServiceInstance>>  serviceInstanceMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String /* uniqueId */ , Set<ServiceInstance>> serviceInstanceMap = new ConcurrentHashMap<>();
 
     //	规则集合
-    private ConcurrentHashMap<String /* ruleId */ , Rule>  ruleMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String /* ruleId */ , Rule> ruleMap = new ConcurrentHashMap<>();
 
     //路径规则map
     private ConcurrentHashMap<String /* 路径 */, Rule> pathRuleMap = new ConcurrentHashMap<>();
@@ -41,7 +42,8 @@ public class DynamicConfigManager {
     public void putServiceDefinition(String uniqueId,
                                      ServiceDefinition serviceDefinition) {
 
-        serviceDefinitionMap.put(uniqueId, serviceDefinition);;
+        serviceDefinitionMap.put(uniqueId, serviceDefinition);
+        ;
     }
 
     public ServiceDefinition getServiceDefinition(String uniqueId) {
@@ -58,8 +60,20 @@ public class DynamicConfigManager {
 
     /***************** 	对服务实例缓存进行操作的系列方法 	***************/
 
-    public Set<ServiceInstance> getServiceInstanceByUniqueId(String uniqueId){
-        return serviceInstanceMap.get(uniqueId);
+    public Set<ServiceInstance> getServiceInstanceByUniqueId(String uniqueId, boolean gray) {
+        Set<ServiceInstance> serviceInstances = serviceInstanceMap.get(uniqueId);
+        if(CollectionUtils.isEmpty(serviceInstances)){
+            return Collections.emptySet();
+        }
+
+        //如果是灰度的，将所有下游服务标识为灰度的进行返回
+        if(gray){
+            return serviceInstances.stream()
+                    .filter(ServiceInstance::isGray)
+                    .collect(Collectors.toSet());
+        }
+        //否则返回全部服务
+        return serviceInstances;
     }
 
     public void addServiceInstance(String uniqueId, ServiceInstance serviceInstance) {
@@ -74,9 +88,9 @@ public class DynamicConfigManager {
     public void updateServiceInstance(String uniqueId, ServiceInstance serviceInstance) {
         Set<ServiceInstance> set = serviceInstanceMap.get(uniqueId);
         Iterator<ServiceInstance> it = set.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             ServiceInstance is = it.next();
-            if(is.getServiceInstanceId().equals(serviceInstance.getServiceInstanceId())) {
+            if (is.getServiceInstanceId().equals(serviceInstance.getServiceInstanceId())) {
                 it.remove();
                 break;
             }
@@ -87,9 +101,9 @@ public class DynamicConfigManager {
     public void removeServiceInstance(String uniqueId, String serviceInstanceId) {
         Set<ServiceInstance> set = serviceInstanceMap.get(uniqueId);
         Iterator<ServiceInstance> it = set.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             ServiceInstance is = it.next();
-            if(is.getServiceInstanceId().equals(serviceInstanceId)) {
+            if (is.getServiceInstanceId().equals(serviceInstanceId)) {
                 it.remove();
                 break;
             }
@@ -116,13 +130,13 @@ public class DynamicConfigManager {
         ConcurrentHashMap<String /* 服务id */, List<Rule>> newServiceIdRuleMap = new ConcurrentHashMap<>();
 
         //将rule放入上述map中
-        for(Rule rule: ruleList){
+        for (Rule rule : ruleList) {
             //添加到ruleMap
             newRuleMap.put(rule.getId(), rule);
 
             //添加到serviceIdRuleMap
             List<Rule> rules = newServiceIdRuleMap.get(rule.getServiceId());
-            if(rules == null){
+            if (rules == null) {
                 rules = new ArrayList<>();
             }
             rules.add(rule);
@@ -130,7 +144,7 @@ public class DynamicConfigManager {
 
             //添加到pathRuleMap
             List<String> paths = rule.getPaths();
-            for(String path: paths){
+            for (String path : paths) {
                 String key = rule.getServiceId() + "." + path;
                 newPathRuleMap.put(key, rule);
             }
@@ -154,14 +168,15 @@ public class DynamicConfigManager {
 
     /**
      * 根据path获取rule
+     *
      * @param path
      * @return
      */
-    public Rule getRuleByPath(String path){
+    public Rule getRuleByPath(String path) {
         return pathRuleMap.get(path);
     }
 
-    public List<Rule> getRuleByServiceId(String serviceId){
+    public List<Rule> getRuleByServiceId(String serviceId) {
         return serviceIdRuleMap.get(serviceId);
     }
 }

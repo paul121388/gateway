@@ -1,5 +1,8 @@
 package org.paul.common.config;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -51,6 +54,13 @@ public class ServiceInstance implements Serializable {
      * 	服务实例对应的版本号
      */
     protected String version;
+
+    /**
+     * 标识当前服务实例是否为灰度
+     */
+    @Getter
+    @Setter
+    private boolean gray;
 
     public ServiceInstance() {
         super();

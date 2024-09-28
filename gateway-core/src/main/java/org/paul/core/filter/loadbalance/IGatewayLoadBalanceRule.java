@@ -17,7 +17,8 @@ public interface IGatewayLoadBalanceRule {
     /**
      * 根据服务id获取service实例
      * @param serviceId
+     * @param gray
      * @return
      */
-    ServiceInstance choose(String serviceId);
+    ServiceInstance choose(String serviceId, boolean gray);
 }
