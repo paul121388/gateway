@@ -40,7 +40,7 @@ public class DisruptorNettyProcessor implements NettyProcessor {
 
     @Override
     public void process(HttpRequestWrapper httpRequestWrapper) {
-
+        this.parallelQueueHandler.add(httpRequestWrapper);
     }
 
     public class BatchEventListenerProcessor implements EventListener<HttpRequestWrapper> {
