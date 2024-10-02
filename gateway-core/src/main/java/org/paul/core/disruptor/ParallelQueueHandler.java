@@ -1,10 +1,12 @@
 package org.paul.core.disruptor;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.ProducerType;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 基于Disruptor的多生产者多消费者无锁队列处理类
@@ -18,7 +20,7 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
     private EventListener<E> eventListener;
 
     //workerPool是用来管理一组workerProcessor存在的，它被作为一个消费者对待
-    private WorkerPool<E> workerPool;
+    private WorkerPool<Holder> workerPool;
 
     //自定义线程池
     private ExecutorService executorService;
@@ -26,20 +28,41 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
     //参数传递类，用于向RingBuffer中放入参数的转换类
     private EventTranslatorOneArg<Holder, E> eventTranslator;
 
-    public ParallelQueueHandler() {
-    }
 
-    public ParallelQueueHandler(RingBuffer<Holder> ringBuffer,
-                                EventListener<E> eventListener,
-                                WorkerPool<E> workerPool,
-                                ExecutorService executorService,
-                                EventTranslatorOneArg<Holder, E> eventTranslator) {
-        // todo 构造这里面成员变量
-        this.ringBuffer = ringBuffer;
-        this.eventListener = eventListener;
+    public ParallelQueueHandler(Builder<E> builder) {
+        this.executorService = Executors.newFixedThreadPool(builder.threads,
+                new ThreadFactoryBuilder().setNameFormat("ParallelQueueHandler" + builder.namePrefix + "-pool-%d").build());
+
+        this.eventListener = builder.eventListener;
+
+        this.eventTranslator = new HolderEventTranslator();
+
+        RingBuffer<Holder> ringBuffer = RingBuffer.create(builder.producerType,
+                new HolderEventFactory(),
+                builder.bufferSize,
+                builder.waitStrategy);
+
+        //创建RingBuffer的屏障
+        SequenceBarrier sequenceBarrier = ringBuffer.newBarrier();
+
+        //创建消费者组
+        WorkHandler<Holder>[] workHandlers = new WorkHandler[builder.threads];
+        //循环填充
+        for (int i = 0; i < workHandlers.length; i++) {
+            workHandlers[i] = new HolderWorkHandler();
+        }
+
+        //给消费者构建线程池
+        WorkerPool<Holder> workerPool = new WorkerPool<>(ringBuffer,
+                sequenceBarrier,
+                new HolderExceptionHandler(),
+                workHandlers);
+
+        //设置消费者的Sequence序号
+        ringBuffer.addGatingSequences(workerPool.getWorkerSequences());
+
+
         this.workerPool = workerPool;
-        this.executorService = executorService;
-        this.eventTranslator = eventTranslator;
     }
 
     @Override
@@ -136,8 +159,8 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
             return this;
         }
 
-        public ParallelQueueHandler<E> build(){
-            return new ParallelQueueHandler<E>();
+        public ParallelQueueHandler<E> build() {
+            return new ParallelQueueHandler<E>(this);
         }
     }
 
@@ -155,6 +178,55 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
             return "Holder{" +
                     "event=" + event +
                     '}';
+        }
+    }
+
+    private class HolderEventTranslator implements EventTranslatorOneArg<Holder, E> {
+        @Override
+        public void translateTo(Holder holder, long l, E e) {
+            holder.setEvent(e);
+        }
+    }
+
+    private class HolderEventFactory implements EventFactory<Holder> {
+        @Override
+        public Holder newInstance() {
+            return new Holder();
+        }
+    }
+
+    //消费者
+    private class HolderWorkHandler implements WorkHandler<Holder> {
+        //事件发生，调用eventListener
+        @Override
+        public void onEvent(Holder holder) throws Exception {
+            eventListener.onEvent(holder.event);
+            holder.setEvent(null);
+        }
+    }
+
+    private class HolderExceptionHandler implements ExceptionHandler<Holder> {
+        @Override
+        public void handleEventException(Throwable throwable, long l, Holder holder) {
+            try {
+                //调用eventListener
+                eventListener.onException(throwable, l, holder.event);
+            } catch (Exception e) {
+
+            } finally {
+                holder.setEvent(null);
+            }
+
+        }
+
+        @Override
+        public void handleOnStartException(Throwable throwable) {
+            throw new UnsupportedOperationException(throwable);
+        }
+
+        @Override
+        public void handleOnShutdownException(Throwable throwable) {
+            throw new UnsupportedOperationException(throwable);
         }
     }
 }
