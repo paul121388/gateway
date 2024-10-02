@@ -1,5 +1,6 @@
 package org.paul.core;
 
+import com.lmax.disruptor.*;
 import lombok.Data;
 
 @Data
@@ -50,6 +51,34 @@ public class Config {
 
     //	客户端空闲连接超时时间, 默认60秒
     private int httpPooledConnectionIdleTimeout = 60 * 1000;
+
+    //缓存类型
+    private String bufferType = "parallel";
+
+    //定义队列大小
+    private int bufferSize = 1 * 1024 * 16;
+
+    //线程数
+    private int processThreadNum = Runtime.getRuntime().availableProcessors();
+
+    //等待策略名称
+    private String waitStrategy = "blocking";
+
+    //根据上述名称，new对应的等待策略
+    public WaitStrategy getWaitStrategy() {
+        switch (waitStrategy) {
+            case "blocking":
+                return new BlockingWaitStrategy();
+            case "busySpin":
+                return new BusySpinWaitStrategy();
+            case "yielding":
+                return new YieldingWaitStrategy();
+            case "sleeping":
+                return new SleepingWaitStrategy();
+            default:
+                return new BlockingWaitStrategy();
+        }
+    }
 
     // 扩展。。。
 

@@ -6,6 +6,8 @@ import org.paul.core.netty.NettyHttpServer;
 import org.paul.core.netty.processor.NettyCoreProcessor;
 import org.paul.core.netty.processor.NettyProcessor;
 
+import static org.paul.common.constants.GatewayConst.BUFFER_TYPE_PARALLEL;
+
 /**
  * 目的：整合之前的netty容器，比如接收http请求的NettyHttpServer，转发请求的NettyHttpClient，和两者之间的核心处理逻辑NettyCoreProcessor
  * 实现LifeCycle
@@ -24,7 +26,7 @@ public class Container implements LifeCycle{
     private NettyHttpClient nettyHttpClient;
 
     //核心逻辑，处理转发
-    private NettyCoreProcessor nettyCoreProcessor;
+    private NettyProcessor nettyProcessor;
 
     public Container(Config config) {
         this.config = config;
@@ -32,7 +34,14 @@ public class Container implements LifeCycle{
     }
     @Override
     public void init() {
-        this.nettyCoreProcessor = new NettyCoreProcessor();
+        //根据不同的配置使用不同的处理类
+        NettyCoreProcessor nettyCoreProcessor = new NettyCoreProcessor();
+        if(config.getBufferType().equals(BUFFER_TYPE_PARALLEL)){
+            // todo 使用disruptor的情况
+        }else{
+            //如果为串行处理，则使用原来的processor
+            this.nettyProcessor = new NettyCoreProcessor();
+        }
 
         this.nettyHttpServer = new NettyHttpServer(config, nettyCoreProcessor);
 

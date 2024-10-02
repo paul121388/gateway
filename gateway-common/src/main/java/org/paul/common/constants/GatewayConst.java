@@ -12,4 +12,5 @@ public interface GatewayConst {
 
     Integer DEFAULT_WEIGHT = 100;
 
+    String BUFFER_TYPE_PARALLEL = "parallel";
 }
