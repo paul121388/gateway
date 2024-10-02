@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 /**
  * 基于Disruptor的多生产者多消费者无锁队列处理类
  */
-public class ParallelQueueHandler<E> implements ParallelQueue {
+public class ParallelQueueHandler<E> implements ParallelQueue<E> {
 
     //disruptor中的缓存
     private RingBuffer<Holder> ringBuffer;
@@ -29,6 +29,7 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
     private EventTranslatorOneArg<Holder, E> eventTranslator;
 
 
+    //处理类的构造
     public ParallelQueueHandler(Builder<E> builder) {
         this.executorService = Executors.newFixedThreadPool(builder.threads,
                 new ThreadFactoryBuilder().setNameFormat("ParallelQueueHandler" + builder.namePrefix + "-pool-%d").build());
@@ -66,39 +67,90 @@ public class ParallelQueueHandler<E> implements ParallelQueue {
     }
 
     @Override
-    public void add(Object event) {
-
+    public void add(E event) {
+        final RingBuffer<Holder> ringBuffer = this.ringBuffer;
+        if (ringBuffer == null) {
+            process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), event);
+        }
+        try {
+            ringBuffer.publishEvent(eventTranslator, event);
+        } catch (NullPointerException e) {
+            process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), event);
+        }
     }
 
     @Override
-    public void add(Object[] event) {
-
+    public void add(E... events) {
+        final RingBuffer<Holder> ringBuffer = this.ringBuffer;
+        if (ringBuffer == null) {
+            process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), events);
+        }
+        try {
+            ringBuffer.publishEvents(eventTranslator, events);
+        } catch (NullPointerException e) {
+            process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), events);
+        }
     }
 
     @Override
-    public boolean tryAdd(Object event) {
-        return false;
+    public boolean tryAdd(E event) {
+        if(this.ringBuffer == null){
+            return false;
+        }
+        try {
+            return ringBuffer.tryPublishEvent(this.eventTranslator, event);
+        }catch (NullPointerException e){
+            return false;
+        }
     }
 
     @Override
-    public boolean tryAdd(Object[] event) {
-        return false;
+    public boolean tryAdd(E... events) {
+        if(this.ringBuffer == null){
+            return false;
+        }
+        try {
+            return ringBuffer.tryPublishEvents(this.eventTranslator, events);
+        }catch (NullPointerException e){
+            return false;
+        }
     }
 
     @Override
     public void start() {
-
+        this.ringBuffer = workerPool.start(executorService);
     }
 
     @Override
     public void shutDown() {
-
+        RingBuffer<Holder> holderRingBuffer = this.ringBuffer;;
+        ringBuffer = null;
+        if (holderRingBuffer == null){
+            return;
+        }
+        if(workerPool != null){
+            workerPool.drainAndHalt();
+        }
+        if(executorService != null){
+            executorService.shutdown();
+        }
     }
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return this.ringBuffer == null;
     }
+
+    private static <E> void process(EventListener<E> eventListener, Throwable e, E event) {
+        eventListener.onException(e, -1, event);
+    }
+
+    private static <E> void process(EventListener<E> eventListener, Throwable e, E... events) {
+        for (E event : events) {
+            process(eventListener, e, event);
+        }
+    }
+
 
     //使用建造者模式构建
     public static class Builder<E> {
