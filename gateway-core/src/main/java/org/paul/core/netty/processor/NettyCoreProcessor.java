@@ -62,6 +62,16 @@ public class NettyCoreProcessor implements NettyProcessor {
         }
     }
 
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void shutDown() {
+
+    }
+
     /**
      * doWriteAndRelease
      *  写入response，添加监听器，由监听器关闭channel

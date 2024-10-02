@@ -43,6 +43,16 @@ public class DisruptorNettyProcessor implements NettyProcessor {
         this.parallelQueueHandler.add(httpRequestWrapper);
     }
 
+    @Override
+    public void start() {
+        parallelQueueHandler.start();
+    }
+
+    @Override
+    public void shutDown() {
+        parallelQueueHandler.shutDown();
+    }
+
     public class BatchEventListenerProcessor implements EventListener<HttpRequestWrapper> {
         @Override
         public void onEvent(HttpRequestWrapper event) {

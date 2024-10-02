@@ -6,4 +6,7 @@ public interface NettyProcessor {
     // 核心处理器，定义方法：入参：包装器
     void process(HttpRequestWrapper httpRequestWrapper);
 
+    //启动 和 销毁
+    void start();
+    void shutDown();
 }

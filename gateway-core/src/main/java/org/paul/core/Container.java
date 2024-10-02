@@ -3,6 +3,7 @@ package org.paul.core;
 import lombok.extern.slf4j.Slf4j;
 import org.paul.core.netty.NettyHttpClient;
 import org.paul.core.netty.NettyHttpServer;
+import org.paul.core.netty.processor.DisruptorNettyProcessor;
 import org.paul.core.netty.processor.NettyCoreProcessor;
 import org.paul.core.netty.processor.NettyProcessor;
 
@@ -37,7 +38,7 @@ public class Container implements LifeCycle{
         //根据不同的配置使用不同的处理类
         NettyCoreProcessor nettyCoreProcessor = new NettyCoreProcessor();
         if(config.getBufferType().equals(BUFFER_TYPE_PARALLEL)){
-            // todo 使用disruptor的情况
+            this.nettyProcessor = new DisruptorNettyProcessor(config, nettyCoreProcessor);
         }else{
             //如果为串行处理，则使用原来的processor
             this.nettyProcessor = new NettyCoreProcessor();
@@ -50,6 +51,7 @@ public class Container implements LifeCycle{
 
     @Override
     public void start() {
+        nettyProcessor.start();
         nettyHttpServer.start();
         nettyHttpClient.start();
         log.info("api gateway started successfully");
@@ -57,6 +59,7 @@ public class Container implements LifeCycle{
 
     @Override
     public void shutdown() {
+        nettyProcessor.shutDown();
         nettyHttpServer.shutdown();
         nettyHttpClient.shutdown();
     }
