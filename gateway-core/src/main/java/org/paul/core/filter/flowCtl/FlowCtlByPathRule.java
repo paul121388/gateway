@@ -88,8 +88,8 @@ public class FlowCtlByPathRule implements IGatewayFlowCtlRule {
                 throw new RuntimeException("获取单机限流工具类失败");
             }
             //尝试获取对应数量的令牌，判断是否被限流，设置flag
-            double count = Math.ceil(permits / duration);
-            flag = guavaCountLimiter.acquire((int) count);
+//            double count = Math.ceil(permits / duration);
+            flag = guavaCountLimiter.acquire(1);
         }
 
         //使用flag表示是否被流控了，流控了就直接抛出异常

@@ -59,27 +59,27 @@ public class GatewayContext extends BaseContext {
 
         // 提供对应的get set方法，返回builder本身
 
-        public Builder getProtocol() {
+        public Builder setProtocol(String protocol) {
             this.protocol = protocol;
             return this;
         }
 
-        public Builder getNettyCtx() {
+        public Builder setNettyCtx(ChannelHandlerContext nettyCtx) {
             this.nettyCtx = nettyCtx;
             return this;
         }
 
-        public Builder getRequest() {
+        public Builder setRequest(GatewayRequest request) {
             this.request = request;
             return this;
         }
 
-        public Builder getRule() {
+        public Builder setRule(Rule rule) {
             this.rule = rule;
             return this;
         }
 
-        public Builder isKeepAlive() {
+        public Builder setKeepAlive(boolean keepAlive) {
             this.keepAlive = keepAlive;
             return this;
         }

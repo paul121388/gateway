@@ -53,7 +53,7 @@ public class MonitorEndFilter implements Filter {
         }
         log.info("prometheus http server start successful, port:{}", ConfigLoader.getConfig().getPrometheusPort());
 
-        //mock
+        /*//mock
         Executors.newScheduledThreadPool(1000).scheduleAtFixedRate(() -> {
             Timer.Sample sample = Timer.start();
             try {
@@ -66,7 +66,7 @@ public class MonitorEndFilter implements Filter {
                     "protocol", "http",
                     "path", "/http-server/ping" + RandomUtils.nextInt(10));
             sample.stop(timer);
-        },200, 100, TimeUnit.MILLISECONDS);
+        },200, 100, TimeUnit.MILLISECONDS);*/
 
     }
 

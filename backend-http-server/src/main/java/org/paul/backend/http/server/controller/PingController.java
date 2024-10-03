@@ -22,7 +22,7 @@ public class PingController {
     public String ping() throws InterruptedException {
         log.info("{}", apiProperties);
 //        Thread.sleep(200000);
-        return "pong gray";
+        return "pong";
     }
 
 }
