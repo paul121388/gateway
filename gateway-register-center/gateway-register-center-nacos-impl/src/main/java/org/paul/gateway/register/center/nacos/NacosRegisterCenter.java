@@ -93,7 +93,7 @@ public class NacosRegisterCenter implements RegisterCenter {
     @Override
     public void deregister(ServiceDefinition serviceDefinition, ServiceInstance serviceInstance) {
         try {
-            namingService.registerInstance(serviceDefinition.getServiceId(),
+            namingService.deregisterInstance(serviceDefinition.getServiceId(),
                     env, serviceInstance.getIp(), serviceInstance.getPort());
         } catch (NacosException e) {
             throw new RuntimeException(e);
