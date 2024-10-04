@@ -78,7 +78,7 @@ public class NacosRegisterCenter implements RegisterCenter {
             nacosInstance.setMetadata(Map.of(GatewayConst.META_DATA_KEY, JSON.toJSONString(serviceInstance)));
 
             // 注册，调用nacos的api，传入实例id，环境,服务在Nacos中的信息
-            namingService.registerInstance(serviceInstance.getServiceInstanceId(), env, nacosInstance);
+            namingService.registerInstance(serviceDefinition.getServiceId(), env, nacosInstance);
 
             // 更新服务，将服务的信息放在map中，key为meta，value为序列化的服务定义
             namingMaintainService.updateService(serviceDefinition.getServiceId(), env, 0,
