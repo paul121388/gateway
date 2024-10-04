@@ -114,14 +114,17 @@ public class NacosRegisterCenter implements RegisterCenter {
 
     private void doSubcribeAllService(){
         try{
-            // 拿到已经够订阅的服务，只需要服务名
+            // 拿到已经够订阅的服务，只需要服务名，
+            // getSubscribeServices方法返回客户端当前主动订阅的服务列表，也就是那些客户端关心并实时跟踪状态变化的服务。
             Set<String> subscribedServices = namingService.getSubscribeServices().stream()
                     .map(ServiceInfo::getName).collect(Collectors.toSet());
 
             // 分页，拿到所有服务
             int pageNo = 1;
             int pageSize = 100;
-            // 拿到服务列表
+            // 拿到服务列表，
+            // getServicesOfServer：这个方法返回的是当前 Nacos 服务器 上注册的所有服务，可能包含客户端未订阅的服务。
+            // 该方法一般用于全局性地查询服务注册情况，并通过分页返回，以避免一次性加载太多服务列表。
             List<String> serviceList = namingService.getServicesOfServer(pageNo, pageSize, env).getData();
 
 
@@ -136,7 +139,7 @@ public class NacosRegisterCenter implements RegisterCenter {
                     if(subscribedServices.contains(serviceName)){
                         continue;
                     }
-                    // 定义eventListener
+                    // 定义eventListener，服务变更的事件监听器。当服务的实例状态变化时，listener 会触发并执行相应的回调
                     EventListener eventListener = new NacosRegisterListener();
                     // 没有定义，就进行订阅，需要service和nacos包中的eventListener，打印日志
                     eventListener.onEvent(new NamingEvent(serviceName, null));
