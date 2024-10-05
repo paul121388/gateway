@@ -43,7 +43,7 @@ public class DynamicConfigManager {
                                      ServiceDefinition serviceDefinition) {
 
         serviceDefinitionMap.put(uniqueId, serviceDefinition);
-        ;
+
     }
 
     public ServiceDefinition getServiceDefinition(String uniqueId) {
