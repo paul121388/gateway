@@ -3,14 +3,17 @@ package org.paul.core;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.paul.common.config.DynamicConfigManager;
+import org.paul.common.config.Rule;
 import org.paul.common.config.ServiceDefinition;
 import org.paul.common.config.ServiceInstance;
 import org.paul.common.utils.NetUtils;
 import org.paul.common.utils.TimeUtil;
 import org.paul.gateway.config.center.api.ConfigCenter;
+import org.paul.gateway.config.center.api.RulesChangeListener;
 import org.paul.gateway.register.center.api.RegisterCenter;
 import org.paul.gateway.register.center.api.RegisterCenterListener;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -36,8 +39,13 @@ public class Bootstrap {
         });
         configCenter.init(config.getRegistryAddress(), config.getEnv());
         //将配置中心的ruleList放到内存中的DynamicConfigManager
-        configCenter.subscribeRulesChange(ruleList -> DynamicConfigManager.getInstance()
-                .putAllRule(ruleList));
+        configCenter.subscribeRulesChange(new RulesChangeListener() {
+            @Override
+            public void onRulesChanged(List<Rule> ruleList) {
+                DynamicConfigManager.getInstance().putAllRule(ruleList);
+            }
+        });
+
 
         //启动容器
         Container container = new Container(config);
