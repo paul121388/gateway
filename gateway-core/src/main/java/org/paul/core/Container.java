@@ -41,10 +41,10 @@ public class Container implements LifeCycle{
             this.nettyProcessor = new DisruptorNettyProcessor(config, nettyCoreProcessor);
         }else{
             //如果为串行处理，则使用原来的processor
-            this.nettyProcessor = new NettyCoreProcessor();
+            this.nettyProcessor = nettyCoreProcessor;
         }
 
-        this.nettyHttpServer = new NettyHttpServer(config, nettyCoreProcessor);
+        this.nettyHttpServer = new NettyHttpServer(config, nettyProcessor);
 
         this.nettyHttpClient = new NettyHttpClient(config, nettyHttpServer.getEventLoopGroupWorker());
     }

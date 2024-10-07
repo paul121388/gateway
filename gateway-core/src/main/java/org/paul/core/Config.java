@@ -26,7 +26,7 @@ public class Config {
     private int eventLoopGroupBossNum= 1;
 
     // Worker线程池的线程数，默认去CPU核心数
-    private int eventLoopGroupWorkerNum= Runtime.getRuntime().availableProcessors();
+    private int eventLoopGroupWorkerNum = 6/*Runtime.getRuntime().availableProcessors()*/;
 
     // 因为接收http请求，http报文大小有限制
     private int httpMaxContentLength = 1024 * 1024 * 64;
@@ -53,13 +53,13 @@ public class Config {
     private int httpPooledConnectionIdleTimeout = 60 * 1000;
 
     //缓存类型
-    private String bufferType = "parallel";
+    private String bufferType = "parallel1";
 
     //定义队列大小
     private int bufferSize = 1 * 1024 * 16;
 
     //线程数
-    private int processThreadNum = Runtime.getRuntime().availableProcessors();
+    private int processThreadNum = Runtime.getRuntime().availableProcessors()/2;
 
     //等待策略名称
     private String waitStrategy = "blocking";

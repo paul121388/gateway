@@ -39,7 +39,7 @@ public class NettyCoreProcessor implements NettyProcessor {
         try {
             // request转换为内部GatewayContext对象
             GatewayContext gatewayContext = RequestHelper.doContext(request, ctx);
-
+            Thread.sleep(10);
             //执行过滤器逻辑
             filterFactory.buildFilterChain(gatewayContext).doFilter(gatewayContext);
 

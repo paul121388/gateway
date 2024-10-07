@@ -73,7 +73,7 @@ public class ParallelQueueHandler<E> implements ParallelQueue<E> {
             process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), event);
         }
         try {
-            ringBuffer.publishEvent(eventTranslator, event);
+            ringBuffer.publishEvent(this.eventTranslator, event);
         } catch (NullPointerException e) {
             process(this.eventListener, new IllegalStateException("ParallelQueue has been closed"), event);
         }

@@ -71,9 +71,9 @@ public class NettyHttpServer implements LifeCycle {
     /**
      * init方法，初始化
      * 如果支持epoll，使用epoll对应的api
-     *      new serverBootstrap 作为netty服务的启动
-     *      new eventLoopGroupBoss，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
-     *      new eventLoopGroupWorker，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
+     * new serverBootstrap 作为netty服务的启动
+     * new eventLoopGroupBoss，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
+     * new eventLoopGroupWorker，构造时从config传入线程数量配置，定义线程工厂，给线程池起名字
      */
     @Override
     public void init() {
@@ -128,12 +128,11 @@ public class NettyHttpServer implements LifeCycle {
                                 // Netty 使用了一个叫做 HttpObjectAggregator 的处理器来将这些片段聚合成一个完整的 HTTP 请求。
                                 // 这个处理器确保了即使请求是分块传输的，应用程序也会接收到一个完整的 FullHttpRequest 对象
                                 new HttpObjectAggregator(config.getHttpMaxContentLength()),
+                                //自定义的核心处理逻辑
+                                new NettyHttpServerHandler(nettyProcessor),
 
                                 //链接管理器：netty生命周期的管理，已经封装好了
-                                new NettyServerConnectManagerHandler(),
-
-                                //自定义的核心处理逻辑
-                                new NettyHttpServerHandler(nettyProcessor)
+                                new NettyServerConnectManagerHandler()
                         );
                     }
                 });
@@ -149,7 +148,7 @@ public class NettyHttpServer implements LifeCycle {
     /**
      * 优雅停机shutdown
      * 两个线程组是否为空
-     *      调用api停止
+     * 调用api停止
      */
     @Override
     public void shutdown() {
